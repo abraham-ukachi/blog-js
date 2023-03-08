@@ -15,17 +15,18 @@ Fed up with static `.php` files 😤😡, we'll be trying – as a personal chal
 The following tables (including a couple of TRIGGERS) were created in our **`db_peace-n-love`** database:
 
 - *`users`*: All currently registered users.
-- *`roles`*: All supported users' roles (i.e. `admin`, `pub`, `mod` `user`, `visitor`, etc)
+- *`groups`*: All supported user groups (i.e. `admin`, `publisher`, `moderator`, `staff`, ...)
 - *`articles`*: All articles created by publishers or administrators.
 - *`articles_trending`*: All trending articles.
 - *`articles_liked`*: All articles liked by registered users.
 - *`categories`*: All categories of corresponding articles.
 - *`tags`*: All tags created by registered users for published articles.
 - *`saves`*: All articles saved by registered users.
-- *`comments`*: All liked articles by registered users.
+- *`comments`*: All comments made by registered users.
 - *`comments_liked`*: All comments liked by registered users.
 - *`streaks`*: All daily streaks of registered users. "You miss a day, you break the streak #LOL"
-- *`priv`* (Privileges) : All permissions that allow a user based on his/her role, to **CREATE**, **READ**, **UPDATE** and/or **DELETE** an article.
+- *`priv`* (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
+- *`groups_priv`*: All group permissions 
 
 > NOTE: For more info, [read the Database section](#Database) of this *README*. 
 
@@ -199,17 +200,19 @@ The following tables were created in a MySQL database named **`db_peace-n-love`*
 
 <!--
 
-- *`roles`*: All supported users' roles (i.e. `admin`, `pub`, `mod` `user`, `visitor`, etc)
+- *`users`*: All currently registered users.
+- *`groups`*: All supported user groups (i.e. `admin`, `publisher`, `moderator`, `staff`, ...)
 - *`articles`*: All articles created by publishers or administrators.
 - *`articles_trending`*: All trending articles.
 - *`articles_liked`*: All articles liked by registered users.
 - *`categories`*: All categories of corresponding articles.
 - *`tags`*: All tags created by registered users for published articles.
 - *`saves`*: All articles saved by registered users.
-- *`comments`*: All liked articles by registered users.
+- *`comments`*: All comments made by registered users.
 - *`comments_liked`*: All comments liked by registered users.
 - *`streaks`*: All daily streaks of registered users. "You miss a day, you break the streak #LOL"
-- *`priv`* (Privileges) : All permissions that allow a user based on his/her role, to **CREATE**, **READ**, **UPDATE** and/or **DELETE** an article.
+- *`priv`* (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
+- *`groups_priv`*: All group permissions 
 
 -->
 
@@ -227,13 +230,13 @@ This table has a [**one-to-many**](https://www.metabase.com/learn/databases/tabl
 | 4 | *`password`* | **VARCHAR** | 255 | No | NULL | - | 
 | 5 | *`firstname`* | **VARCHAR** | 30 | No | NULL | - | 
 | 6 | *`lastname`* | **VARCHAR** | 30 | No | NULL | - | 
-| 7 | *`role_id`* ⨁ | **TINYINT** | 10 | Yes | NULL | - |  
+| 7 | *`group_id`* ⨁ | **TINYINT** | 10 | Yes | NULL | - |  
 | 8 | *`created_at`* | **DATETIME** | - | Yes | NULL | - |  
 
 > NOTE:
 
 
-### `roles` - MySQL Table
+### `groups` - MySQL Table
 
 This table has a [**many-to-one**](https://www.metabase.com/learn/databases/table-relationships#one-to-many-relationship) relationship with [*`users`*](#`users`---MySQL-Table) table.
 
@@ -282,6 +285,75 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 > NOTE:
 
 
+### `tags` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+
+### `saves` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+
+### `comments` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+
+### `comments_liked` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+
+### `streaks` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+
+### `priv` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+### `groups_priv` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+
+> NOTE:
+
+---
 
 ## Installation
 > IMPORTANT: Make sure you have [`XAMPP`](https://www.apachefriends.org/) already installed on your computer before proceeding.
@@ -322,7 +394,7 @@ open http://localhost/blog-js
 
 | Browser | Version | Status | Date | Time
 |:--------|:--------|:-------|:-----|:-----
-| *`Brave`* | **1.45.127** | [Tested](http://localhost/blog-js/welcome.php) | 21-02-2023 | 21:52:50
+| *`Brave`* | **-** | *Pending* | - | -
 | *`Chrome`* | **-** | *Pending* | - | -
 | *`Firefox`* | **-** | *Pending* | - | -
 | *`Safari`* | **-** | *Pending* | - | -
