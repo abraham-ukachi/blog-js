@@ -7,7 +7,7 @@ As this project is to be done by a group of 2, my partner for the next two weeks
 
 So, we've decided to name our blog 🥁... "**`peace-n-love`**" (✌🏾❤️), and created a MySQL Database named **`db_peace-n-love`**. 
 
-Fed up with static `.php` files 😤😡, we'll be trying – as a personal challenge – to turn it into a bit of a [progressive web app](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/App_structure) using little to no third-party libraries like [*`redux`*](https://redux.js.org/), [*`pwa-helpers`*](https://www.npmjs.com/package/pwa-helpers) or [*`lit`*](https://lit.dev/docs/)
+Fed up with static `.php` files 😤😡, we'll be trying – as a personal challenge – to turn it into a bit of a [progressive web app](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/App_structure) **without** third-party libraries like [*`redux`*](https://redux.js.org/), [*`pwa-helpers`*](https://www.npmjs.com/package/pwa-helpers) or [*`lit`*](https://lit.dev/docs/)
 
 **Why `peace-n-love` you might ask?** #GoodQuestion😜 !-: With everything that's going on in the world today, especially the recent [intense fighting in Ukraine 🇺🇦](https://www.theguardian.com/world/live/2023/mar/06/russia-ukraine-war-live-ukraine-likely-making-limited-tactical-withdrawal-in-bakhmut-analysts-say), we've never needed some **peace** ✌🏾,and **love**❤️, moooore. Therefore, our blog will serve as an outlet for peaceful and loving articles that can hopefully change the world for the better. 🤞🏽🙏
 
