@@ -75,7 +75,7 @@ The official deadline of the jobs below - according to [intra](https://intra.lap
 
 | No. | Name | File | Status |
 |:----|:-----|:-----|:-------|
-| 1 | *`Default / Index - Page`* | **index.php** | Pending |
+| 1 | *`Default / Index - Page`* | **index.php** | *_In progress_* |
 | 2 | *`Peace & Love - Database - SQL`* | **db_peace-n-love.sql** | Pending |
 
 > NOTE: (\*) = still needs to be updated
@@ -201,23 +201,6 @@ These are some of the things we did or plan to do, in addition to this project's
 
 The following tables were created in a MySQL database named **`db_peace-n-love`** via [PDO](https://www.php.net/manual/en/class.pdo.php) on [phpmyadmin](http://localhost/phpmyadmin):
 
-<!--
-
-- *`users`*: All currently registered users.
-- *`groups`*: All supported user groups (i.e. `admin`, `publisher`, `moderator`, `staff`, ...)
-- *`articles`*: All articles created by publishers or administrators.
-- *`articles_trending`*: All trending articles.
-- *`articles_liked`*: All articles liked by registered users.
-- *`categories`*: All categories of corresponding articles.
-- *`tags`*: All tags created by registered users for published articles.
-- *`saves`*: All articles saved by registered users.
-- *`comments`*: All comments made by registered users.
-- *`comments_liked`*: All comments liked by registered users.
-- *`streaks`*: All daily streaks of registered users. "You miss a day, you break the streak #LOL"
-- *`priv`* (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
-- *`groups_priv`*: All group permissions 
-
--->
 
 > NOTE: **`⨁`** = _FOREIGN_KEY_
 
