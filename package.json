@@ -1,0 +1,38 @@
+{
+  "name": "blog-js",
+  "version": "0.0.1",
+  "description": "A simple, fast and inovative blog web app about peace and love, built with JavaScript and a MySQL database. ",
+  "main": "index.php",
+  "scripts": {
+    "start": "open https://localhost/blog-js/",
+    "test": "open http://localhost/blog-js/test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abraham-ukachi/blog-js.git"
+  },
+  "keywords": [
+    "blog",
+    "js",
+    "peace",
+    "love",
+    "peace-n-love",
+    "php",
+    "mysql",
+    "pdo",
+    "pwa"
+  ],
+  "author": "Abraham Ukachi <abraham.ukachi@laplateforme.io> (https://abraham-ukachi.students-laplateforme.io)",
+  "contributors": [
+    {
+      "name": "Hajar Aslan",
+      "email": "hajar.aslan@laplateforme.io",
+      "url": "https://hajar-aslan.students-laplateforme.io"
+    } 
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abraham-ukachi/blog-js/issues"
+  },
+  "homepage": "https://github.com/abraham-ukachi/blog-js#readme"
+}
