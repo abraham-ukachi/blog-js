@@ -1,0 +1,23 @@
+{
+  "name": "abraham-ukachi/blog-js",
+  "authors": [
+    { 
+      "name": "Abraham Ukachi", 
+      "email": "abraham.ukachi@laplateforme.io"
+    },
+
+    {
+      "name": "Hajar Aslan", 
+      "email": "hajar.aslan@laplateforme.io"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "App\\": "api/",
+      "App\\Database\\": "api/database/",
+      "App\\User\\": "api/user/",
+      "App\\Article\\": "api/article/"
+    }
+  },
+  "require": {}
+}
