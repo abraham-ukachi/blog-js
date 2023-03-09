@@ -1,4 +1,4 @@
-# `blog-js` (peace-n-love)
+# `blog-js`
 > IMPORTANT: This is a working progress and subject to major changes until the specified deadline below.
 
 A school project to create a **blog** web app using `JavaScript` with a fully functioning `MySQL` database.
@@ -14,16 +14,18 @@ Fed up with static `.php` files 😤😡, we'll be trying – as a personal chal
 
 The following tables (including a couple of TRIGGERS) were created in our **`db_peace-n-love`** database:
 
-- *`users`*: All currently registered users.
-- *`groups`*: All supported user groups (i.e. `admin`, `publisher`, `moderator`, `staff`, ...)
-- *`articles`*: All articles created by publishers or administrators.
-- *`articles_trending`*: All trending articles.
-- *`articles_liked`*: All articles liked by registered users.
-- *`categories`*: All categories of corresponding articles.
-- *`tags`*: All tags created by registered users for published articles.
-- *`saves`*: All articles saved by registered users.
-- *`comments`*: All comments made by registered users.
-- *`comments_liked`*: All comments liked by registered users.
+- [*`users`*](#users---MySQL-Table): All currently registered users.
+- [*`groups`*](#groups---MySQL-Table): All supported user groups (i.e. `admin`, `publisher`, `moderator`, `staff`, ...)
+- [*`avatars`*](#avatars---MySQL-Table): All avatars of registered users.
+- [*`images`*](#images---MySQL-Table): All images used by this blog.
+- [*`articles`*](#articles---MySQL-Table): All articles created by publishers or administrators.
+- [*`articles_trending`*](#articles_trending---MySQL-Table): All trending articles.
+- [*`articles_likes`*](#articles_likes---MySQL-Table): All users who liked an article.
+- [*`categories`*](#categories---MySQL-Table): All categories of corresponding articles.
+- [*`tags`*](#tags---MySQL-Table): All tags created by registered users for published articles.
+- [*`saves`*](#saves---MySQL-Table): All articles saved by registered users.
+- [*`comments`*](#comments---MySQL-Table): All comments made by registered users.
+- [*`comments_likes`*](#comments_likes---MySQL-Table): All users who liked a comment.
 - *`streaks`*: All daily streaks of registered users. "You miss a day, you break the streak #LOL"
 - *`priv`* (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
 - *`groups_priv`*: All group permissions 
@@ -220,57 +222,98 @@ The following tables were created in a MySQL database named **`db_peace-n-love`*
 
 ### `users` - MySQL Table
 
-This table has a [**one-to-many**](https://www.metabase.com/learn/databases/table-relationships#one-to-many-relationship) relationship with [*`articles`*](#`todolists`---MySQL-Table) table.
+This table has a [**one-to-many**](https://www.metabase.com/learn/databases/table-relationships#one-to-many-relationship) relationship with [*`articles`*](#`todolists`---MySQL-Table), [*`avatars`*](#`avatars`---MySQL-Table) tables.
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`id`* 🔑 | **INT** | 10 | No | NULL | **AUTO_INCREMENT** | 
+| 1 | *`id`* 🔑 | **INT** | 255 | No | NULL | **AUTO_INCREMENT** | 
 | 2 | *`username`* | **VARCHAR** | 30 | No | NULL | - | 
 | 3 | *`email`* | **VARCHAR** | 60 | No | NULL | - | 
 | 4 | *`password`* | **VARCHAR** | 255 | No | NULL | - | 
 | 5 | *`firstname`* | **VARCHAR** | 30 | No | NULL | - | 
 | 6 | *`lastname`* | **VARCHAR** | 30 | No | NULL | - | 
 | 7 | *`group_id`* ⨁ | **TINYINT** | 10 | Yes | NULL | - |  
-| 8 | *`created_at`* | **DATETIME** | - | Yes | NULL | - |  
+| 8 | *`avatar_id`* ⨁ | **INT** | 255 | Yes | NULL | - |  
+| 9 | *`bio`* | **TINYTEXT** | 255 | Yes | NULL | - |  
+| 10 | *`created_at`* | **DATETIME** | - | Yes | NULL | - |  
 
-> NOTE:
+
+> NOTE: 
 
 
 ### `groups` - MySQL Table
-
-This table has a [**many-to-one**](https://www.metabase.com/learn/databases/table-relationships#one-to-many-relationship) relationship with [*`users`*](#`users`---MySQL-Table) table.
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
 | 1 | *`id`* 🔑  | **TINYINT** | 10 | No | NULL | **AUTO_INCREMENT** |
 | 2 | *`name`* | **VARCHAR** | 30 | No | NULL | - |
-| 3 | *`priv_id`* | **VARCHAR** | 30 | No | NULL | - |
+| 3 | *`rights`* | **VARCHAR** | 255 | No | NULL | - |
+
+
+
+### `avatars` - MySQL Table
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`label`* | **VARCHAR** | 30 | Yes | NULL | - |
+| 3 | *`placeholder`* | **BOOLEAN** | 1 | Yes | 0 | - |
+| 4 | *`image_id`* ⨁  | **INT** | 255 | No | NULL | - |
+
+
+
+### `images` - MySQL Table
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`width`* | **TINYINT** | 5 | No | NULL | - |
+| 3 | *`height`* | **TINYINT** | 5 | No | NULL | - |
+| 4 | *`type`* | **VARCHAR** | 10 | No | NULL | - |
+| 5 | *`blob`* | **MEDIUMBLOB** | 2000000 | No | NULL | - |
 
 
 ### `articles` - MySQL Table
 
-| No. | Name | Type | Length | Null | Default | Extra |
-|:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
-
-> NOTE: 
-
-### `articles_trending` - MySQL Table
-> ⚠️  WARNING: This table contains one or more TRIGGERs
+This table has a [**many-to-one**](https://www.metabase.com/learn/databases/table-relationships#many-to-one-relationship) relationship with [*`users`*](#`users`---MySQL-Table) table.
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`category_id`* ⨁ | **TINYINT** | 10 | No | NULL | - |
+| 3 | *`author_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 4 | *`cover_image_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 5 | *`title`* | **VARCHAR** | 60 | No | NULL | - |
+| 6 | *`text`* | **TEXT** | 2000 | No | NULL | - |
+| 7 | *`likes`* | **INT** | 10 | Yes | NULL | - |
+| 8 | *`published_at`*   | **DATETIME** | - | Yes | NULL | - |
+| 9 | *`edited_at`*   | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
 
-
-### `articles_liked` - MySQL Table
+### `articles_trending` - MySQL Table
 > ⚠️  WARNING: This table may contain one or more TRIGGERs
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`author_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 4 | *`start`* | **DATETIME** | - | Yes | NULL | - |
+| 5 | *`end`* | **DATETIME** | - | Yes | NULL | - |
+
+> NOTE: 
+
+
+### `articles_likes` - MySQL Table
+> ⚠️  WARNING: This table may contain one or more TRIGGERs
+
+| No. | Name | Type | Length | Null | Default | Extra |
+|:----|:-----|:-----|:-------|:-----|:--------|:-------|
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 4 | *`liked_at`* | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
 
@@ -280,7 +323,9 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **TINYINT** | 10 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`name`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`image_id`* ⨁ | **INT** | 255 | Yes | NULL | - |
 
 > NOTE:
 
@@ -290,7 +335,9 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`name`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
 
 > NOTE:
 
@@ -300,7 +347,10 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 4 | *`saved_at`* | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
 
@@ -310,17 +360,25 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`text`* | **TEXT** | 500 | No | NULL | - |
+| 4 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 5 | *`created_at`* | **DATETIME** | - | Yes | NULL | - |
+| 6 | *`edited_at`*   | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
 
 
-### `comments_liked` - MySQL Table
+### `comments_likes` - MySQL Table
 > ⚠️  WARNING: This table may contain one or more TRIGGERs
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`comment_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 4 | *`liked_at`* | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
 
@@ -330,7 +388,12 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 2 | *`days`* | **INT** | 255 | No | NULL | - |
+| 3 | *`weeks`* | **INT** | 255 | No | NULL | - |
+| 4 | *`months`* | **INT** | 255 | No | NULL | - |
+| 5 | *`start`* | **DATETIME** | - | Yes | NULL | - |
+| 6 | *`end`* | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
 
@@ -340,16 +403,9 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
-
-> NOTE:
-
-### `groups_priv` - MySQL Table
-> ⚠️  WARNING: This table may contain one or more TRIGGERs
-
-| No. | Name | Type | Length | Null | Default | Extra |
-|:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`-`* 🔑  | **-** | - | - | - | - |
+| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 2 | *`name`* | **VARCHAR** | 30 | No | NULL | - |
+| 3 | *`level`* | **TINYINT** | 3 | No | 0 | - |
 
 > NOTE:
 
