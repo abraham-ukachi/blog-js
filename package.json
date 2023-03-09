@@ -28,11 +28,15 @@
       "name": "Hajar Aslan",
       "email": "hajar.aslan@laplateforme.io",
       "url": "https://hajar-aslan.students-laplateforme.io"
-    } 
+    }
   ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/abraham-ukachi/blog-js/issues"
   },
-  "homepage": "https://github.com/abraham-ukachi/blog-js#readme"
+  "homepage": "https://github.com/abraham-ukachi/blog-js#readme",
+  "devDependencies": {
+    "markdown-it": "^13.0.1",
+    "mocha": "^10.2.0"
+  }
 }
