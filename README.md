@@ -26,9 +26,8 @@ The following tables (including a couple of TRIGGERS) were created in our **`db_
 - [*`saves`*](#saves---MySQL-Table): All articles saved by registered users.
 - [*`comments`*](#comments---MySQL-Table): All comments made by registered users.
 - [*`comments_likes`*](#comments_likes---MySQL-Table): All users who liked a comment.
-- *`streaks`*: All daily streaks of registered users. "You miss a day, you break the streak #LOL"
-- *`priv`* (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
-- *`groups_priv`*: All group permissions 
+- [*`streaks`*](#streaks---MySQL-Table): All daily streaks of registered users. "You miss a day, you break the streak #LOL"
+- [*`priv`*](#priv---MySQL-Table) (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
 
 > NOTE: For more info, [read the Database section](#Database) of this *README*. 
 
