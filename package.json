@@ -4,7 +4,7 @@
   "description": "A simple, fast and inovative blog web app about peace and love, built with JavaScript and a MySQL database. ",
   "main": "index.php",
   "scripts": {
-    "start": "open https://localhost/blog-js/",
+    "start": "open http://localhost/blog-js/",
     "test": "open http://localhost/blog-js/test/"
   },
   "repository": {
