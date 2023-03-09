@@ -124,7 +124,8 @@ The folder & file structure of this project:
 - - *Page.js*
 - - *View.js*
 - - ...
-- - [**helpers**](./src/helpers)
+- - [**components**](./src/components/)
+- - [**helpers**](./src/helpers/)
 - - * *starter.js*
 - - * *resizer.js*
 - - * *router.js*
@@ -279,7 +280,7 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
-| 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
+| 1 | *`id`* 🔑  | **VARCHAR** | 30 | No | NULL | - |
 | 2 | *`category_id`* ⨁ | **TINYINT** | 10 | No | NULL | - |
 | 3 | *`author_id`* ⨁ | **INT** | 255 | No | NULL | - |
 | 4 | *`cover_image_id`* ⨁ | **INT** | 255 | No | NULL | - |
@@ -297,7 +298,7 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
 | 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
-| 2 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 2 | *`article_id`* ⨁ | **VARCHAR** | 30 | No | NULL | - |
 | 3 | *`author_id`* ⨁ | **INT** | 255 | No | NULL | - |
 | 4 | *`start`* | **DATETIME** | - | Yes | NULL | - |
 | 5 | *`end`* | **DATETIME** | - | Yes | NULL | - |
@@ -311,7 +312,7 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 | No. | Name | Type | Length | Null | Default | Extra |
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
 | 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
-| 2 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 2 | *`article_id`* ⨁ | **VARCHAR** | 30 | No | NULL | - |
 | 3 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
 | 4 | *`liked_at`* | **DATETIME** | - | Yes | NULL | - |
 
@@ -337,7 +338,7 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
 | 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
 | 2 | *`name`* ⨁ | **INT** | 255 | No | NULL | - |
-| 3 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`article_id`* ⨁ | **VARCHAR** | 30 | No | NULL | - |
 
 > NOTE:
 
@@ -349,7 +350,7 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 |:----|:-----|:-----|:-------|:-----|:--------|:-------|
 | 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
 | 2 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
-| 3 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 3 | *`article_id`* ⨁ | **VARCHAR** | 30 | No | NULL | - |
 | 4 | *`saved_at`* | **DATETIME** | - | Yes | NULL | - |
 
 > NOTE:
@@ -363,7 +364,7 @@ This table has a [**many-to-one**](https://www.metabase.com/learn/databases/tabl
 | 1 | *`id`* 🔑  | **INT** | 255 | No | NULL | **AUTO_INCREMENT** |
 | 2 | *`user_id`* ⨁ | **INT** | 255 | No | NULL | - |
 | 3 | *`text`* | **TEXT** | 500 | No | NULL | - |
-| 4 | *`article_id`* ⨁ | **INT** | 255 | No | NULL | - |
+| 4 | *`article_id`* ⨁ | **VARCHAR** | 30 | No | NULL | - |
 | 5 | *`created_at`* | **DATETIME** | - | Yes | NULL | - |
 | 6 | *`edited_at`*   | **DATETIME** | - | Yes | NULL | - |
 
