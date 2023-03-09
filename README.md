@@ -7,7 +7,7 @@ As this project is to be done by a group of 2, my partner for the next two weeks
 
 So, we've decided to name our blog 🥁... "**`peace-n-love`**" (✌🏾❤️), and created a MySQL Database named **`db_peace-n-love`**. 
 
-Fed up with static `.php` files 😤😡, we'll be trying – as a personal challenge – to turn it into a bit of a [progressive web app](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/App_structure) **without** third-party libraries like [*`redux`*](https://redux.js.org/), [*`pwa-helpers`*](https://www.npmjs.com/package/pwa-helpers) or [*`lit`*](https://lit.dev/docs/)
+Fed up with static `.php` files 😤😡, we'll be trying – as a personal challenge – to turn it into a bit of a [progressive web app](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/App_structure) **without**\* third-party libraries like [*`redux`*](https://redux.js.org/), [*`pwa-helpers`*](https://www.npmjs.com/package/pwa-helpers) or [*`lit`*](https://lit.dev/docs/)
 
 **Why `peace-n-love` you might ask?** #GoodQuestion😜 !-: With everything that's going on in the world today, especially the recent [intense fighting in Ukraine 🇺🇦](https://www.theguardian.com/world/live/2023/mar/06/russia-ukraine-war-live-ukraine-likely-making-limited-tactical-withdrawal-in-bakhmut-analysts-say), we've never needed some **peace** ✌🏾,and **love**❤️, moooore. Therefore, our blog will serve as an outlet for peaceful and loving articles that can hopefully change the world for the better. 🤞🏽🙏
 
@@ -27,9 +27,11 @@ The following tables (including a couple of TRIGGERS) were created in our **`db_
 - [*`comments`*](#comments---MySQL-Table): All comments made by registered users.
 - [*`comments_likes`*](#comments_likes---MySQL-Table): All users who liked a comment.
 - [*`streaks`*](#streaks---MySQL-Table): All daily streaks of registered users. "You miss a day, you break the streak #LOL"
-- [*`priv`*](#priv---MySQL-Table) (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE**, **READ**, **UPDATE**, **DELETE**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
+- [*`priv`*](#priv---MySQL-Table) (Global Privileges) : All privileges currently supported by our `peace-n-love` blog (e.g. **CREATE ACCOUNT**, **READ ACCOUNT**, **UPDATE ACCOUNT**, **DELETE ACCOUNT**, **CREATE USER**, **CREATE GROUPS**, **CREATE ARTICLES**, **CREATE COMMENTS**, etc).
 
 > NOTE: For more info, [read the Database section](#Database) of this *README*. 
+
+>   \*: [markdown-it](https://markdown-it.github.io/markdown-it/) and [mocha](https://www.npmjs.com/package/mocha) npm libraries were used for markdown parsing and testing respectively.
 
 
 ## Description 
@@ -446,6 +448,7 @@ open http://localhost/blog-js
 
 ## TODOs
 
+- [ ] ? Rename `priv` table to `global_privileges`
 - [ ] Add a **login with Google** Button on the *`Login - Page`*
 - [ ] Implement **Service Workers** to provide offline functionality
 - [ ] ? Rename this project from `blog-js` to `peace-n-love`
