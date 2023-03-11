@@ -193,6 +193,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 29 | *`Default Home - View`* | **default-home-view.js** | Pending |
 | 30 | *`Default Login - View`* | **default-login-view.js** | Pending |
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
+| 32 | *`Engine - Class`* | **Engine.js** | [Done](./src/Engine.js)\* |
 
 > NOTE: (\*) = still needs to be updated. <br>
 > There's certainly a couple of file we must've forgot or not added yet, so we'll keep the above list updated obv. :)
