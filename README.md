@@ -184,7 +184,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | Pending |
 | 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | Pending |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
-| 23 | *`App - Class`* | **App.js** | Pending |
+| 23 | *`App - Class`* | **App.js** | _*In progress*_ |
 | 24 | *`Screen- Class`* | **Screen.js** | Pending |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
@@ -194,6 +194,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 30 | *`Default Login - View`* | **default-login-view.js** | Pending |
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
 | 32 | *`Engine - Class`* | **Engine.js** | [Done](./src/Engine.js)\* |
+| 33 | *`Loader - Mixin`* | **loader-mixin.js** | _*In progress*_ |
 
 > NOTE: (\*) = still needs to be updated. <br>
 > There's certainly a couple of file we must've forgot or not added yet, so we'll keep the above list updated obv. :)
