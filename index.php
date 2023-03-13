@@ -34,7 +34,7 @@
 * 
 * 
 * ============================
-* IMPORTANT: PWA is coming 😱  
+* IMPORTANT: PWA is coming 😱 
 * ============================
 */
 
@@ -101,21 +101,6 @@
   <link rel="apple-touch-icon" sizes="144x144" href="assets/images/manifest/icon-144x144.png">
   <link rel="apple-touch-icon" sizes="192x192" href="assets/images/manifest/icon-192x192.png">
    
-  <!-- Theme -->
-  <!-- TODO: Rename `styles.css` to `style.css` -->
-  <!--<link rel="stylesheet" href="assets/theme/color.css">
-  <link rel="stylesheet" href="assets/theme/typography.css">
-  <link rel="stylesheet" href="assets/theme/styles.css"> -->
-  
-  <!-- Stylesheet -->
-  <!-- <link rel="stylesheet" href="assets/stylesheets/home-styles.css"> -->
-  
-  <!-- Animations -->
-  <!-- <link rel="stylesheet" href="assets/animations/fade-in-animation.css"> -->
-  <!-- <link rel="stylesheet" href="assets/animations/slide-from-down-animation.css"> -->
-
-  <!-- This script adds App initialization JS code -->
-  <!-- <script src="src/App.js" defer></script> -->
   
 </head>
 <!-- End of HEAD -->
