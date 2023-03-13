@@ -76,7 +76,7 @@ The official deadline of the jobs below - according to [intra](https://intra.lap
 
 | No. | Name | File | Status |
 |:----|:-----|:-----|:-------|
-| 1 | *`Default / Index - Page`* | **index.php** | *_In progress_* |
+| 1 | *`Default / Index - Page`* | **index.php** | [Done](./index.php)\* |
 | 2 | *`Peace & Love - Database - SQL`* | **db_peace-n-love.sql** | Pending |
 
 > NOTE: (\*) = still needs to be updated
