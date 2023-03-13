@@ -70,6 +70,15 @@
 */
 
 
+import { loaderMixin } from './helpers/mixins/loader-mixin.js';
+
+"use strict"; 
+// ^^^^^^^^^ This keeps us on our toes, as it forces us to use all pre-defined variables, among other things 😅
+
+
+
+
+
 // Defining some constant variables...
 
 const PROPERTY_UPDATE_DELAY = 200; 
@@ -386,3 +395,7 @@ export class Engine {
 
 
 }; // <- End of `Engine` class
+
+
+// Attach the loader mixin to the engine
+Object.assign(Engine.prototype, loaderMixin);
