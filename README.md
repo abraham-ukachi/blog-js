@@ -140,9 +140,18 @@ The folder & file structure of this project:
 - - * *register-page.js*
 - - * ...
 - - [**views**](./src/views/)
-- - * *default-home-view.js*
-- - * *default-login-view.js*
-- - * *default-register-view.js*
+- - * ...
+- - * [**home**](./src/views/home/)
+- - * - *default-home-view.js*
+- - * - *login-home-view.js*
+- - * - *register-home-view.js*
+- - * [**articles**](./src/views/articles/)
+- - * - *default-articles-view.js*
+- - * - *reader-articles-view.js*
+- - * - *creator-articles-view.js*
+- - * [**profile**](./src/views/profile/)
+- - * - *default-profile-view.js*
+- - * - *editor-profile-view.js*
 - - ...
 - LICENSE
 - README.md
