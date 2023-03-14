@@ -36,7 +36,6 @@
 */
 
 import { Engine } from './Engine.js'; // <- we just need our custom engine to get started #LOL !!! :)
-import { loaderMixin } from './helpers/mixins/loader-mixin.js';
 // import { eventMixin } from './helpers/mixins/event-mixin.js';
 
 "use strict"; 
@@ -73,7 +72,6 @@ export const PAGES_DIR = `${SOURCE_DIR}pages/`;
 // views directory
 export const VIEWS_DIR = `${SOURCE_DIR}views/`;
 
-
 // screens
 export const SPLASH_SCREEN = 'splash';
 export const WELCOME_SCREEN = 'welcome';
@@ -90,8 +88,35 @@ export const SETTINGS_PAGE = 'settings';
 export const DEFAULT_VIEW = 'default';
 
 
+// a list of all assets that have been loaded
+export const loadedAssetsList = [];
 
 
+
+
+/**
+ * `html`
+ * Creating our very own `html` tag function for all template literals
+ * for more info, [read this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
+ *
+ * @type { TagFunction } 
+ */
+export const html = (strings, ...values) => {
+
+  // TEST: Log all the values
+  // DEBUG [4dbsmaster]: tell me about all the values
+  values.forEach((value, index) => console.log(`\x1b[42m\x1b[30m[html]: value at ${index} => ${value}`));
+
+  // return the raw strings including their values
+  return String.raw({ raw: strings }, ...values);
+};
+
+
+
+
+
+
+// TODO: Turn the App into a custom element by extending `HTMLElement`
 
 
 // Create a `App` class
@@ -104,6 +129,7 @@ export class App extends Engine {
    */
   static get properties() {
     return {
+      id: { type: String },
       name: { type: String },
       title: { type: String },
       loading: { type: Boolean }
@@ -168,8 +194,7 @@ export class App extends Engine {
   
   // Define some public properties
    
-  // Define some private properties
-  
+  // Define some private properties  
    
 
   /**
@@ -187,9 +212,6 @@ export class App extends Engine {
     this.lang = lang;
     this.theme = theme;
 
-    // create the app's prototypes
-    this._createPrototypes();
-
     // DEBUG [4dbsmaster]: tell me about it ;)
     // console.log(`[constructor]: #_props.init => `, this.#_props.init);
   }
@@ -201,13 +223,13 @@ export class App extends Engine {
    */
   init() {
     // Initialize public properties
+    this.id = 'app';
     this.name = APP_NAME;
     this.title = 'Peace & Love';
     this.loading = true;
     
     // Initialize private properties
     
-
 
     // ====== TESTING PROPERTIES ==========
     
@@ -221,6 +243,20 @@ export class App extends Engine {
     // ====================================
 
 
+  }
+
+
+
+  render() {
+    return html`
+
+      <!-- App Layiout -->
+      <div id="appLayout">
+        <span>${this.getProperty('name')}</span>
+      </div>
+      <!-- End of App Layout -->
+      
+    `;
   }
   
 
@@ -280,11 +316,66 @@ export class App extends Engine {
    * Method used to run the app
    * @override
    */
-  run() {
-    super.run(); // TODO: This should load all the controller's available themes, styles and animations 
+  async run() {
+    // TODO: move all the below engine response code elsewhere 
+    //       or inside `Engine` class, and just call `await super.run()`
 
-    // Load the splash screen
-    this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this.onScreensLoaded(loadedScreens));
+    // run the engine first and assign it's response to `engineResponse` variable
+    let engineResponse = await super.run();
+
+    // DEBUG [4dbsmaster]: tell me about this `engineResponse`
+    console.log(`\x1b[36m[run](1): engineResponse => ${eval(engineResponse)}\x1b[0m`, engineResponse);
+
+    // Looping through all the assets in `engineResponse`
+    Object.entries(engineResponse).map(([assetsName, assetsData]) => {
+      
+      // for each asset in `assetsData` (i.e. theme, styles, animation, etc)...
+      for (let asset of assetsData) {
+        // ...get the corresponding asset stylesheet as `stylsheet`
+        let stylesheet = asset.stylesheet;
+
+        console.log(asset.cssText);
+       
+        if (asset.name == 'color') {
+          // this.appRoot.adoptedStylesheets = [...this.appRoot.adoptedStylesheets, stylesheet];
+          // let sheet = new CSSStyleSheet();
+          // sheet.replaceSync('.error { color: red; }');
+
+          // document.adoptedStylesheets = [sheet];
+
+          //console.info('WWWWTTTTTTFFFF!!!!!');
+
+          // console.log(asset.stylesheet.cssRules[0].cssText);
+        }
+
+        // add this `stylesheet` to the app.
+        //this.addStylesheet(stylesheet, this.appRoot);
+
+        // this._addStylesheet
+        // append this `stylesheet` to the app.
+        // this.appRoot.adoptedStylesheets = [...this.appRoot.adoptedStylesheets, stylesheet];
+
+        // DEBUG [4dbsmaster]: tell me about it ;)
+        console.log(`\x1b[40m\x1b[36m[run](3): asset.name => ${asset.name} & asset.stylesheet => \x1b[0m`, asset.stylesheet);
+
+      };
+
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.log(`\x1b[36m[run](2): assetsName => ${assetsName} & assetsData => \x1b[0m`, assetsData);
+
+    }); // <- end of `engineResponse`
+
+
+    //Load the splash screen
+    this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this._onScreensLoaded(loadedScreens));
+
+    /*
+    // 1. load the themes
+    this._loadThemes([...App.theme]).then((loadedThemes) => {
+      // 2. Load the splash screen
+      this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this.onScreensLoaded(loadedScreens));
+    });
+    */
     
   }
 
@@ -356,15 +447,53 @@ export class App extends Engine {
   /* >> Public Getters << */
 
   /**
-   * Returns the root object of this app.
+   * Returns the top-level or root element of this app.
    *
-   * @returns { Object } 
+   * @returns { HTMLDocument } 
    */
   get appRoot() {
     return document;
   }
+
+  /**
+   * Returns the host element of the app.
+   * NOTE: This elment holds the shadowRoot
+   *
+   * @returns { HTMLElement } 
+   */
+  get appHost() {
+    return document.getElementById(this.id);
+  }
+
+
+  /**
+   * Returns the shadow root of the app.
+   *
+   * @returns { ShadowRoot }
+   */
+  get shadowRoot() {
+    return this.appHost.shadowRoot;
+  }
   
 
+  /**
+   * Returns the app's `<template id="app">` element.
+   *
+   * @returns { HTMLTemplateElement } 
+   */
+  get appTemplateEl() {
+    return document.getElementById('app');
+  }
+
+
+  /**
+   * Returns the app's template contents or 'document-fragment'
+   *
+   * @returns { DocumentFragment }
+   */
+  get appDocument() {
+    return this.appTemplateEl.content.cloneNode(true);
+  }
 
 
   /* >> Private Methods << */
@@ -375,49 +504,47 @@ export class App extends Engine {
    *
    * @param { Array[Object] } loadedScreen
    */
-  onScreensLoaded(loadedScreens) {
+  _onScreensLoaded(loadedScreens) {
     loadedScreens.forEach((screen) => {
 
       // If the Splash Screen has been loaded...
       if (screen.name === SPLASH_SCREEN) {
-        // ...get the splash screen object as `splashScreen`
-        this.splashScreen = screen.object;
-        
-        // TODO: show the splash screen
-        // this.splashScreen.show();
+        // ...handle the splash screen load
+        this._splashScreenLoadHandler(screen.object);
+
       }
 
       // DEBUG [4dbsmaster]: tell me about it ;)
-      console.log(`\x1b[33m[onScreensLoaded](1): screen.name => ${screen.name} & screen.object => \x1b[0m`, screen.object);
+      console.log(`\x1b[33m[_onScreensLoaded](1): screen.name => ${screen.name} & screen.object => \x1b[0m`, screen.object);
     });
   }
 
   /**
-   * Creates the prototypes for the app
+   * Handler that is called whenever the splash screen loads 
+   *
+   * @param { Object } splashScreen
    */
-  _createPrototypes() {
-    
-    // String Prototypes 
-    
-    /**
-     * capitalize - string - prototype
-     */
-    String.prototype.capitalize = function() { 
-      return String(this.charAt(0)).toUpperCase() + this.substr(1, this.length);
-    };
+  _splashScreenLoadHandler(splashScreen) {
+    // assign the splash screen object to a app's `splashScreen` variable
+    this.splashScreen = splashScreen;
+
+    // remove the app's spinner 
+    this._removeSpinner();
+
+    // TODO: show the splash screen
+    // this.splashScreen.show();
+  }
 
 
-    // Array Prototypes
+  /**
+   * Removes the app's spinner
+   */
+  _removeSpinner() {
+    // Do nothing if there's no spinner
+    if (!this._spinnerEl) { return }
 
-    /**
-     * screen - array - prototype
-     */
-    /*
-    Array.prototype.findScreen = function(name) {
-      return this.filter((screen) => screen.name === name);
-    };
-    */
-
+    // remove the spinner element
+    this._spinnerEl.remove();
   }
 
   /* >> Private Setters << */
@@ -425,16 +552,27 @@ export class App extends Engine {
   /* >> Private Getters << */
 
 
+  /**
+   * Returns the `<img id="spinner">` element
+   *
+   * @returns { Element } 
+   */
+  get _spinnerEl() {
+    return this.appRoot.getElementById('spinner');
+  }
+
+
+
 
 }; // <- End of `App` class
 
 
+
+// Attach some mixins to `App`...
+// Object.assign(App.prototype, EventMixin);
+
 // Attach some behaviors to `App`...
+// Object.assign(App.prototype, AppBehavior);
+//
 
-Object.assign(App.prototype, loaderMixin);
-
-// Object.assign(App.prototype, EngineBehavior);
-// Object.assign(App.prototype, LoaderBehavior);
-
-
-// window.app = App;
+customElements.define('my-app', App);
