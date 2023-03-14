@@ -446,7 +446,7 @@ open http://localhost/blog-js
 
 | Browser | Version | Status | Date | Time
 |:--------|:--------|:-------|:-----|:-----
-| *`Brave`* | **-** | *Pending* | - | -
+| *`Brave`* | **1.47.186** | [Tested](http://localhost/blog-js) | 14-03-2023 | 23:43:03
 | *`Chrome`* | **-** | *Pending* | - | -
 | *`Firefox`* | **-** | *Pending* | - | -
 | *`Safari`* | **-** | *Pending* | - | -
@@ -493,4 +493,4 @@ open http://localhost/blog-js
 
 | Classic Mode | Light Mode | Dark Mode |
 |:-------------|:-----------|:----------|
-| N/A | N/A | N/A |
+| N/A | N/A | N/Adsd |
