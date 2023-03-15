@@ -62,16 +62,6 @@
   <!-- Title -->
   <title>blog-js</title>
    
-  <!-- Fonts -->
-  <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
-  <!-- Mulish - Font -->
-  <!-- <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;700&display=swap" rel="stylesheet"> -->
-  
-  <!-- Material Icons - https://github.com/google/material-design-icons/tree/master/font -->
-  <!-- https://material.io/resources/icons/?style=baseline -->
-  <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-
    
   <!-- Base -->
   <base href="blog-js">
@@ -100,14 +90,23 @@
   <link rel="apple-touch-icon" sizes="96x96" href="assets/images/manifest/icon-96x96.png">
   <link rel="apple-touch-icon" sizes="144x144" href="assets/images/manifest/icon-144x144.png">
   <link rel="apple-touch-icon" sizes="192x192" href="assets/images/manifest/icon-192x192.png">
-   
-  
+
+
+  <!-- Top-level styles -->
+  <style>
+    body, html, #app { 
+      position: absolute; 
+      inset: 0; 
+      padding: 0;
+      margin: 0;
+    }
+  </style> 
+
 </head>
 <!-- End of HEAD -->
 
 <!-- BODY -->
 <body>
-
   <!-- Spinner -->
   <!-- NOTE: This will be removed when the App is ready -->
   <img id="spinner" 
@@ -122,6 +121,10 @@
       pointer-events: none;
     "
   /> <!-- End of Spinner -->
+
+  <!-- App -->
+  <!-- TODO: Replace this with a `<blog-js>` or `<peace-n-love>` custom element -->
+  <div id="app"></div>
 
 
   <script type="module">
