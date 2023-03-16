@@ -35,7 +35,7 @@
 *
 */
 
-import { Engine } from './Engine.js'; // <- we just need our custom engine to get started #LOL !!! :)
+import { html, Engine } from './Engine.js'; // <- we just need stuff from our custom engine to get started #LOL !!! :)
 // import { eventMixin } from './helpers/mixins/event-mixin.js';
 
 "use strict"; 
@@ -94,27 +94,6 @@ export const loadedAssetsList = [];
 
 
 
-/**
- * `html`
- * Creating our very own `html` tag function for all template literals
- * for more info, [read this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
- *
- * @type { TagFunction } 
- */
-export const html = (strings, ...values) => {
-
-  // TEST: Log all the values
-  // DEBUG [4dbsmaster]: tell me about all the values
-  values.forEach((value, index) => console.log(`\x1b[42m\x1b[30m[html]: value at ${index} => ${value}`));
-
-  // return the raw strings including their values
-  return String.raw({ raw: strings }, ...values);
-};
-
-
-
-
-
 
 // TODO: Turn the App into a custom element by extending `HTMLElement`
 
@@ -132,7 +111,10 @@ export class App extends Engine {
       id: { type: String },
       name: { type: String },
       title: { type: String },
-      loading: { type: Boolean }
+      lang: { type: String },
+      theme: { type: String },
+      updated: { type: Boolean }
+
     };
   }
 
@@ -212,8 +194,11 @@ export class App extends Engine {
     this.lang = lang;
     this.theme = theme;
 
+    // create the app
+    this.#create();
+
     // DEBUG [4dbsmaster]: tell me about it ;)
-    // console.log(`[constructor]: #_props.init => `, this.#_props.init);
+    // console.log(`[constructor]: #_props.init =>`, this.#_props.init);
   }
 
 
@@ -226,10 +211,10 @@ export class App extends Engine {
     this.id = 'app';
     this.name = APP_NAME;
     this.title = 'Peace & Love';
-    this.loading = true;
+    this.updated = false;
     
     // Initialize private properties
-    
+
 
     // ====== TESTING PROPERTIES ==========
     
@@ -247,15 +232,44 @@ export class App extends Engine {
 
 
 
+  /**
+   * Renders the app's template
+   * IMPORTANT: This is where the html content of the app is defined.
+   * 
+   * TODO: Return a `HTMLTemplate` instead
+   *
+   * @returns { String }
+   */
   render() {
     return html`
-
-      <!-- App Layiout -->
-      <div id="appLayout">
-        <span>${this.getProperty('name')}</span>
-      </div>
-      <!-- End of App Layout -->
       
+      <!-- App Container --> 
+      <div id="appContainer" class="theme ${this.theme}" lang="${this.lang}">
+
+        <!-- Screens -->
+        <div id="screens"></div>
+        <!-- End of Screens -->
+
+        <!-- Pages -->
+        <div id="pages"></div>
+        <!-- End of Pages -->
+
+        <!-- Dialogs -->
+        <div id="dialogs"></div>
+        <!-- End of Dialogs -->
+
+        <!-- Menus -->
+        <div id="menus"></div>
+        <!-- End of Menus -->
+
+        <!-- Toasts -->
+        <div id="toasts"></div>
+        <!-- End of Toasts -->
+
+      </div>
+      <!-- End of App Container --> 
+
+      <!-- NOTE: Style Links will be injected here -->
     `;
   }
   
@@ -265,12 +279,17 @@ export class App extends Engine {
    * @override from `Engine`
    */
   firstUpdated() {
-    
+  
+    // add event listeners here 
+
+    // this.host.addEventListener('click', (ev) => console.log(`clicking host ev.currentTarget =>`, ev.currentTarget));
+
     // TODO: Install the starter helper & media-query watcher
      
     // DEBUG [4dbsmaster]: tell me about it ;)
-    console.log(`\x1b[33m[firstUpdated](1): App have been updated for the first time\x1b[0m`);
-    console.log(`\x1b[33m[firstUpdated](2): this.busy => ${this.loading}\x1b[0m`);
+    console.log(`\x1b[40m\x1b[33m[firstUpdated](1): App have been updated for the first time\x1b[0m`);
+    console.log(`\x1b[40m\x1b[33m[firstUpdated](2): this.containerEl => ${eval(this.containerEl)}\x1b[0m`);
+
   }
 
   /**
@@ -281,16 +300,22 @@ export class App extends Engine {
    */
   propertiesUpdated(changedProperties) {
     changedProperties.forEach((prop) => {
+
+      if (prop.name === 'updated' && prop.value === true) {
+        // call the first updated method
+        this.firstUpdated();
+      }
+
+      if (prop.name === 'title') {
+        this.setTitle(prop.value);
+      }
+
       // DEBUG [4dbsmaster]: tell me about it ;)
       console.log(`\x1b[33m[changedProperties]: 
         1. prop.name => ${prop.name}
         2. prop.value => ${prop.value} 
         3. prop.oldValue => ${prop.oldValue}
       \x1b[0m`);
-
-      if (prop.name == 'title') {
-        this.setTitle(prop.value);
-      }
 
     });
   }
@@ -317,65 +342,37 @@ export class App extends Engine {
    * @override
    */
   async run() {
-    // TODO: move all the below engine response code elsewhere 
-    //       or inside `Engine` class, and just call `await super.run()`
 
-    // run the engine first and assign it's response to `engineResponse` variable
+    // add the app's document fragment to `shadowRoot`
+    this.shadowRoot.appendChild(this.documentFragment);
+    // set `updated` property to TRUE
+    this.updated = true;
+
+    // run the engine first and wait for a response
     let engineResponse = await super.run();
 
-    // DEBUG [4dbsmaster]: tell me about this `engineResponse`
-    console.log(`\x1b[36m[run](1): engineResponse => ${eval(engineResponse)}\x1b[0m`, engineResponse);
+
 
     // Looping through all the assets in `engineResponse`
-    Object.entries(engineResponse).map(([assetsName, assetsData]) => {
-      
-      // for each asset in `assetsData` (i.e. theme, styles, animation, etc)...
-      for (let asset of assetsData) {
-        // ...get the corresponding asset stylesheet as `stylsheet`
-        let stylesheet = asset.stylesheet;
-
-        console.log(asset.cssText);
-       
-        if (asset.name == 'color') {
-          // this.appRoot.adoptedStylesheets = [...this.appRoot.adoptedStylesheets, stylesheet];
-          // let sheet = new CSSStyleSheet();
-          // sheet.replaceSync('.error { color: red; }');
-
-          // document.adoptedStylesheets = [sheet];
-
-          //console.info('WWWWTTTTTTFFFF!!!!!');
-
-          // console.log(asset.stylesheet.cssRules[0].cssText);
-        }
-
-        // add this `stylesheet` to the app.
-        //this.addStylesheet(stylesheet, this.appRoot);
-
-        // this._addStylesheet
-        // append this `stylesheet` to the app.
-        // this.appRoot.adoptedStylesheets = [...this.appRoot.adoptedStylesheets, stylesheet];
-
-        // DEBUG [4dbsmaster]: tell me about it ;)
-        console.log(`\x1b[40m\x1b[36m[run](3): asset.name => ${asset.name} & asset.stylesheet => \x1b[0m`, asset.stylesheet);
-
-      };
+    // IDEA: Inject the line of style in the app's shadow DOM directly
+    Object.entries(engineResponse).map(([assetsId, assetsData]) => {
+      // TODO: handle `engineResponse` appropriately 
 
       // DEBUG [4dbsmaster]: tell me about it ;)
-      console.log(`\x1b[36m[run](2): assetsName => ${assetsName} & assetsData => \x1b[0m`, assetsData);
+      console.log(`\x1b[40m\x1b[36m[run]: assetsId => ${assetsId} & assetsData => \x1b[0m`, assetsData);
 
-    }); // <- end of `engineResponse`
-
-
-    //Load the splash screen
-    this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this._onScreensLoaded(loadedScreens));
-
-    /*
-    // 1. load the themes
-    this._loadThemes([...App.theme]).then((loadedThemes) => {
-      // 2. Load the splash screen
-      this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this.onScreensLoaded(loadedScreens));
     });
-    */
+
+
+    // HACK / IDEA: allocating enough time before executing the `onReady()` method,
+    //              this is to prepare for any unforseen issues
+    // after 0.1 seconds or 100 milliseconds...
+    setTimeout(() => {
+      // ...call the onReady() method
+      this.onReady();
+    }, 100);
+
+
     
   }
 
@@ -383,8 +380,13 @@ export class App extends Engine {
    * Handler that is called when the app is ready
    */
   onReady() {
+
+    // Load the splash screen
+    this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this._onScreensLoaded(loadedScreens));
+    
+    
     // DEBUG [4dbsmaster]: tell me about it ;)
-    console.log(`\x1b[36m[onReady]: ${this.name} is ready`); 
+    console.log(`\x1b[40m\x1b[31m[onReady]: ${this.name} is ready`); 
   }
 
 
@@ -402,12 +404,12 @@ export class App extends Engine {
     let newTitle = hasAuthor ? `${value} | by ${AUTHOR}` : value;
 
     // DEBUG [4dbsmaster]: tell me about it ;)
-    // console.log(`[setTitle]: newTitle => ${newTitle} & this.appRoot.title => ${this.appRoot.title}`);
+    // console.log(`[setTitle]: newTitle => ${newTitle} & this.root.title => ${this.root.title}`);
 
     // If the current title is not the same as newTitle...
-    if (this.appRoot.title !== newTitle) {
+    if (this.root.title !== newTitle) {
       // ...update the browser's title with `newTitle`
-      this.appRoot.title = newTitle;
+      this.root.title = newTitle;
     }
 
   }
@@ -422,10 +424,10 @@ export class App extends Engine {
    */
   getTitle(hasAuthor = false) {
     // TODO: ? Use this one-liner instead
-    // return hasAuthor ? this.appRoot.title : this.appRoot.title.split('|').shift().trim();
+    // return hasAuthor ? this.root.title : this.root.title.split('|').shift().trim();
 
     // Initialize the `title` variable with the current browser's title.
-    let title = this.appRoot.title;
+    let title = this.root.title;
 
     // If `hasAuthor` is NOT TRUE
     if (!hasAuthor) {
@@ -440,18 +442,27 @@ export class App extends Engine {
     // return the `title`
     return title;
   }
-  
+ 
   
   /* >> Public Setters << */
 
   /* >> Public Getters << */
 
   /**
+   * Returns the app's `<div id="container">` element in the shadow root
+   *  
+   * @returns { Element } containerEl
+   */
+  get containerEl() {
+    return this.shadowRoot.getElementById('appContainer');
+  }
+
+  /**
    * Returns the top-level or root element of this app.
    *
    * @returns { HTMLDocument } 
    */
-  get appRoot() {
+  get root() {
     return document;
   }
 
@@ -461,8 +472,8 @@ export class App extends Engine {
    *
    * @returns { HTMLElement } 
    */
-  get appHost() {
-    return document.getElementById(this.id);
+  get host() {
+    return this.root.getElementById(this.id);
   }
 
 
@@ -472,31 +483,84 @@ export class App extends Engine {
    * @returns { ShadowRoot }
    */
   get shadowRoot() {
-    return this.appHost.shadowRoot;
+    return this.host.shadowRoot;
   }
   
 
   /**
-   * Returns the app's `<template id="app">` element.
+   * Returns the `<head>` element in the app's root or document.
+   *
+   * @returns { Element } 
+  */
+  get rootHead() {
+    return this.root.getElementsByTagName('head')[0];
+  }
+
+  /**
+   * Returns the `<template>` element inside the `host`
    *
    * @returns { HTMLTemplateElement } 
    */
-  get appTemplateEl() {
-    return document.getElementById('app');
+  get template() {
+    return this.host.querySelector('template');
   }
 
 
   /**
    * Returns the app's template contents or 'document-fragment'
-   *
+   * 
    * @returns { DocumentFragment }
    */
-  get appDocument() {
-    return this.appTemplateEl.content.cloneNode(true);
+  get documentFragment() {
+    return this.template.content.cloneNode(true);
   }
 
 
+
   /* >> Private Methods << */
+
+  /**
+   * Creates the app
+   * NOTE: This method will create a template element with the formatted html from `render()`, 
+   *       and add it to the corresponding host in DOM.
+   *
+   * @private
+   */
+  #create() {
+    // get the formatted html template string from `render()` as `formattedHTML`
+    let formattedHTML = this.render();
+
+    // Check if the browser supports the HTML template 
+    if ('content' in this.root.createElement('template')) {
+
+      // create a `template` element
+      let templateEl = this.root.createElement('template');
+
+      // insert the `formattedHTML` into the `templateEl`
+      templateEl.innerHTML = formattedHTML;
+
+      // append this template element to the host
+      this.host.append(templateEl);
+
+      // Now, attach a shadow to the app's host element
+      this.host.attachShadow({mode: 'open'}); // <- an `open` mode allows JS to modify/update the contents of shadow-root
+      
+       
+      // append this template element inside the body
+      // this.root.body.append(templateEl);
+
+    } else { // <- Browser doesn't support HTML template element :(
+      // TODO: Find another way to add the app's template content to `host` :/
+      
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.warn(`\x1b[34m[#create]: browser doesn't support HTML template\x1b[0m`);
+    }
+      
+
+
+    
+
+  }
 
 
   /**
@@ -547,6 +611,7 @@ export class App extends Engine {
     this._spinnerEl.remove();
   }
 
+
   /* >> Private Setters << */
 
   /* >> Private Getters << */
@@ -558,7 +623,7 @@ export class App extends Engine {
    * @returns { Element } 
    */
   get _spinnerEl() {
-    return this.appRoot.getElementById('spinner');
+    return this.root.getElementById('spinner');
   }
 
 
@@ -575,4 +640,6 @@ export class App extends Engine {
 // Object.assign(App.prototype, AppBehavior);
 //
 
-customElements.define('my-app', App);
+
+// TODO: Make this a custom element
+// customElements.define('blog-js-app', BlogJsApp);
