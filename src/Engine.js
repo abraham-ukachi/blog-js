@@ -81,12 +81,41 @@ import { loaderMixin } from './helpers/mixins/loader-mixin.js';
 
 // Defining some constant variables...
 
-const PROPERTY_UPDATE_DELAY = 200; 
+// property update delay
+const PROPERTY_UPDATE_DELAY = 30; 
+// default run timeout
+const DEFAULT_RUN_TIMEOUT = 60000; // <- 60 seconds = 1 minute
+
+
+
+
+
+
+/**
+ * `html`
+ * Creating our very own `html` tag function for all template literals
+ * for more info, [read this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
+ *
+ * @type { TagFunction } 
+ */
+export const html = (strings, ...values) => {
+
+  // TEST: Log all the values
+  // DEBUG [4dbsmaster]: tell me about all the values
+  values.forEach((value, index) => console.log(`\x1b[42m\x1b[30m[html]: value at ${index} => ${value}`));
+
+  // return the raw strings including their values
+  return String.raw({ raw: strings }, ...values);
+};
+
+
+
 
 
 
 // Creating a `Engine` class...
 
+// TODO: Use `getController()` instead of `#_controller` to 
 
 /**
  * Class representing an app engine.
@@ -133,8 +162,19 @@ export class Engine {
   #_propsUpdateTimer = null;
 
 
+  /**
+   * Run Timer
+   */
+  #_runTimer = null;
 
 
+  /**
+   * Stylesheets of the controller
+   *
+   * @type { Array }
+   * @private
+   */
+  #_stylesheets = [];
 
 
   /**
@@ -145,7 +185,7 @@ export class Engine {
   constructor(controller) {
     // Initialize the private `_controller` variable
     this.#_controller = controller;
-
+    
     // If this `_controller` has some properties...
     if (this.#_controller.hasOwnProperty('properties')) {
       // ...call the properties initializer of the engine's controller
@@ -153,9 +193,15 @@ export class Engine {
     }
 
 
+    // initialize the prototypes
+    this.#_prototypesInitializer();
+
+    // Load all assets with a 5 minutes timeout
+    // this.#_loadAssets(1);
+
     // call the `init()` public method
     this.init();
-
+    
   }
 
 
@@ -167,12 +213,98 @@ export class Engine {
    * NOTE: Any user can override this method
    */
   init() {}
-  
+
+
   /**
-   * Runs the engine
+   * Method used to define the controller's default template string
    * NOTE: Any user can override this method
+   *
+   * Example usage:
+   *
+   *  render() {
+   *    return html`<span>Hello, World!</span>`;
+   *  }
+   *
+   * @returns { HTMLTemplate }
    */
-  run() {}
+  render() {
+    return html`<span>hello from ${this.name}</span>`;
+  }
+
+ 
+  /**
+   * Method used to run this engine
+   * NOTE: Any user can override this method
+   *
+   * TODO: Stop running the engine after the given `timeout`
+   *
+   * @param { ShadowRoot }
+   * @param { Number } timeout - in milliseconds
+   * @returns { Promise } promise - resolve(loadedThemes, loadedStyles, loadedAnimations)
+   */
+  run(shadowRoot = this.shadowRoot, timeout = DEFAULT_RUN_TIMEOUT) {
+    // declare some undefined variables
+    let loadedThemes, loadedStyles, loadedAnimations;
+
+    // IDEA: dynamically load all the available `theme`, `styles` and `animations` assets of the controller 
+
+    // cancel any active `runTimer`
+    // clearTimeout(this.#_runTimer);
+
+    // get the controller
+    let controller = this.getController();
+
+
+    // return a promise while attempting to load all assets
+     return new Promise(async (resolve, reject) => {
+
+       // TODO|IDEA: Stop running the engine after the given `timeout`
+       // this.#_runTimer = setTimeout(() => reject('timeout'), timeout);
+
+       try { // <- trying to load some assets safely ;)
+
+         // initalize an empty resolve object as `resObj` 
+         let resObj = {};
+        
+         // if the controller has themes...
+         if (controller.theme?.length) {
+           // ...load the themes
+           loadedThemes = await this._loadThemes(shadowRoot, [...this.#_controller.theme]);
+
+           // add this `loadedThemes` to the response object
+           resObj.loadedThemes = loadedThemes;
+         }
+
+         if (controller.styles?.length) { // <- controller has styles...
+           // ...load the styles
+           loadedStyles = await this._loadStyles(shadowRoot, [...this.#_controller.styles]);
+
+           // add this `loadedStyles` to the response object
+           resObj.loadedStyles = loadedStyles;
+         }
+
+         if (controller.animations?.length) { // <- controller has animations...
+           // ...load the animations
+           loadedAnimations = await this._loadAnimations(shadowRoot, [...this.#_controller.animations]);
+           
+           // add this `loadedAnimations` to the response object
+           resObj.loadedAnimations = loadedAnimations;
+         } 
+
+         // cancel the `runTimer`
+         // clearTimeout(this.#_runTimer);
+
+         // resolve this promise
+         resolve(resObj);
+
+       } catch (error) {
+         // return the error message
+         reject(error);
+
+       }
+
+     });
+  }
 
   /**
    * Handler that is called whenever a property gets reset
@@ -204,7 +336,7 @@ export class Engine {
     if (!this.#_controller.properties) { return result }
     
     // Checking if a property with this name already exists, using our beloved ternary statement...
-    let propFound = Object.keys(this.#_controller.properties).includes(propName) ? true : false;
+    let propFound = Object.keys(this.#_controller.properties).includes(propName) ? true : false; // <- NN; i know ;)
 
     if (!propFound) {
       // add the property to the controller's properties list
@@ -214,12 +346,20 @@ export class Engine {
       this.#_props.value[propName] = propValue;
       this.#_props.old[propName] = undefined;
 
+      // Define this property
+      Object.defineProperty(this, propName, {
 
-      // Define a setter for this `propName`
-      this.__defineSetter__(propName, (propValue) => this.#_propertySetter(propName, propValue));
+        get() {
+          return this.#_propertyGetter(propName); 
+        },
 
-      // Define a getter for this `propName`
-      this.__defineGetter__(propName, this.#_propertyGetter);
+        set(newPropValue) {
+          this.#_propertySetter(propName, newPropValue);
+        },
+
+        enumerable: true,
+        configurable: true
+      });
 
       // Set the result to TRUE
       result = true;
@@ -238,6 +378,69 @@ export class Engine {
    */
   getProperty(propName) {
     return this.#_props.value[propName];
+  }
+
+  /**
+   * Returns the controller of this engine (a.k.a the constructor)
+   *
+   * @returns { Class }
+   */
+  getController() {
+    return this.#_controller;
+    //return this.constructor;
+  }
+
+
+  /**
+   * Adds the given constructable `stylesheet` to the specified `controller`
+   *
+   * @param { CSSStyleSheet } stylesheet
+   * @param { HTMLDocument|ShadowRoot } controllerDocument
+   *
+   * @returns { Boolean } Returns TRUE if the stylesheet was added successfully ;)
+   */
+  addStylesheet(stylesheet, controllerDocument = document) {
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[42m\x1b[1m\x1b[30m[addStylesheet] (BEFORE): stylesheet => ${eval(stylesheet)} & controllerDocument => ${eval(controllerDocument)}\x1b[0m`);
+
+    // Do nothing if this `stylesheet` has already been added
+    if (this.verifyStylesheet(stylesheet) === true) { return false }
+    
+    // IF NOT, add (technically, append) the given `stylesheet` to the private `#_stylesheets` list
+    this.#_stylesheets.push(...stylesheet);
+
+
+
+    // Update the `controllerDocument`'s stylesheets
+    controllerDocument.adoptedStylesheets = [this.#_stylesheets]; // <- WARNING: not supported by all browsers yet ;)
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[42m\x1b[1m\x1b[30m[addStylesheet] (AFTER): stylesheet => ${eval(stylesheet)} & controllerDocument => ${eval(controllerDocument)}\x1b[0m`);
+
+    return true; // <- everything went well; stylesheet was added & update!
+  }
+
+  
+  /**
+   * Method used to verify or check if a stylesheet has been added
+   * 
+   * @param { CSSStyleSheet } stylesheet
+   *
+   * @returns { Boolean } - Returns TRUE if the given `stylesheet` was found in the private `#_stylesheets` list
+   */
+  verifyStylesheet(stylesheet) {
+    return this.#_stylesheets.includes(stylesheet);
+  }
+
+  /**
+   * Returns all stylesheets of the given `controller`
+   *
+   * @param { HTMLDocument } controller
+   *
+   * @returns { Array[CSSStyleSheet] } stylesheets
+   */
+  getStylesheets(controller = this.getController()) {
+    return this.#_stylesheets;
   }
 
   /* >> Public Setters << */
@@ -278,6 +481,86 @@ export class Engine {
 
 
   /**
+   * Method used to initialize all the neccessary prototypes 
+   * @private
+   */
+  #_prototypesInitializer() {
+    
+    // String Prototypes 
+    
+    /**
+     * capitalize - string - prototype
+     */
+    String.prototype.capitalize = function() { 
+      return String(this.charAt(0)).toUpperCase() + this.substr(1, this.length);
+    };
+
+    /**
+     * lowers the first letter of a string
+     */
+    String.prototype.lowerFirstLetter = function() {
+      return String(this.charAt(0)).toLowerCase() + this.substr(1, this.length);
+    }
+
+    /**
+     * to camel case
+     * NOTE: This prototype changes a hyphenated string, 
+     *       say 'abraham-ukachi' into 'abrahamUkachi' (camel case)
+     */
+    String.prototype.toCamelCase = function() {
+      // Initialize a `result` variable
+      let result = '';
+
+      // split the string using `-` as a separator into a `splitValues` list
+      let splitValues = this.split('-');
+      // capitalize the items of a mapped `splitValues` list ignoring the first item,
+      // while making sure the first letter is a lower-cased
+      let mappedValues = splitValues.map((item, index) => {
+        return (index > 0) ? item.capitalize() : item.lowerFirstLetter();
+      });
+
+      // join the mappedValues as result
+      result = mappedValues.join('');
+      
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      // console.log(`[toCamelCase - prototype](1): result => ${result}`);
+      // console.log(`[toCamelCase - prototype](2): splitValues => `, splitValues);
+      // console.log(`[toCamelCase - prototype](3): mappedValues => `, mappedValues);
+      // console.log(`[toCamelCase - prototype](4): result => `, result);
+
+      // return the `result`
+      return result;
+    };
+
+    // Array Prototypes
+
+
+    // - - -
+    
+    
+    /**
+     * CSSStyleSheet Prototypes
+     */
+    CSSStyleSheet.prototype.getAllCSSText = function() {
+      // Initialize the `allCSSText` variable
+      let allCSSText = '';
+
+      // Loop through `cssRules` of this stylesheet
+      for (const rule of this.cssRules) {
+        // append the current cssText of `rule` to `allCSSText`
+        allCSSText += rule.cssText;
+      }
+
+      // Return `allCSSText`
+      return allCSSText;
+    };
+    
+    
+
+  }
+
+
+  /**
    * Method used to initialize all the given properties
    *
    * @param { Object } properties
@@ -292,11 +575,20 @@ export class Engine {
       // assign this undefined `propValue` to the current property's value
       this.#_props.value[propName] = propValue;
 
-      // Define a setter for this `propName`
-      this.__defineSetter__(propName, (propValue) => this.#_propertySetter(propName, propValue));
+      // Define this property
+      Object.defineProperty(this, propName, {
 
-      // Define a getter for this `propName`
-      this.__defineGetter__(propName, this.#_propertyGetter);
+        get() {
+          return this.#_propertyGetter(propName); 
+        },
+
+        set(newPropValue) {
+          this.#_propertySetter(propName, newPropValue); 
+        },
+
+        enumerable: true,
+        configurable: true
+      });
 
     });
 
@@ -311,7 +603,7 @@ export class Engine {
      */
     #_propertySetter(propName, propValue) {
       // Do nothing if the given `propValue` type is not the same as
-      // the specified type of the corresponding controller property, using a nullish coalescing operator ('?.').
+      // the specified type of the corresponding controller property, using an optional operator ('?.').
       if (typeof propValue !== typeof this.#_controller.properties?.[propName].type()) { return }
        
       // Get the old value of this property as `oldPropValue`
