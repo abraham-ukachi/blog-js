@@ -82,6 +82,10 @@ import {
   ANIM_DIR
 } from '../../App.js';
 
+// Import the list of loaded assets
+// TODO: Remove the below `loadedAssetsList` import and related mentions in this code asap
+import { loadedAssetsList } from '../../App.js';
+
 
 "use strict"; 
 // ^^^^^^^^^ This keeps us on our toes, as it forces us to use all pre-defined variables, among other things 😅
@@ -304,29 +308,35 @@ export const loaderMixin = {
 
 
 
+  // # +++++++++++++++++++++[ ASSETS ]+++++++++++++++++++++++++ #
   // # ======================================================== #
   // # ============ THEME, STYLESHEETS & ANIMATIONS =========== #
   // # ======================================================== #
+  // # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
+  // TODO: Use [Constructable StyleSheets](https://web.dev/constructable-stylesheets/)
 
 
   /**
    * Method used to load one or more themes.
    *
-   * @param { Array } themes - list of themes to be loaded
-   * @param { String } themesDir - directory of the themes 
    * Example usage:
    *
-   *    this._loadThemes(['color', 'typography', 'styles'], THEME_DIR).then((loadedThemes) => {
+   *    this._loadThemes(shadowRoot, ['color', 'typography', 'styles'], THEME_DIR).then((loadedThemes) => {
    *
    *      // do something awesome here after the themes have been loaded
    *
    *    });
    *
+   *
+   * @param { ShadowRoot } shadowRoot - the Shadow DOM where shared or specific themes will be injected. 
+   * @param { Array } themes - list of themes to be loaded
+   * @param { String } themesDir - directory of the themes 
+   *
    * @returns { Promise } promise
    * @private
    */
-  _loadThemes(themes, themesDir = THEME_DIR) {
+  _loadThemes(shadowRoot, themes, themesDir = THEME_DIR) {
 
     // Create a promise
     let promise = new Promise((resolve, reject) => {
@@ -338,22 +348,26 @@ export const loaderMixin = {
       for (let themeName of themes) {
         // ...get the url of this theme as `themeUrl`
         let themeUrl = themesDir + `${themeName}.css`; 
+        // get the theme id
+        let themeId = `${themeName.toCamelCase()}Theme`; // <- returns eg: 'colorTheme'
 
-        // dynamically import the `themeUrl`
-        import(themeUrl).then((module) => {
+        // create a `<link>` element as `linkEl`
+        let linkEl = document.createElement('link');
+        linkEl.id = themeId;
+        linkEl.href = themeUrl;
+        linkEl.rel = 'stylesheet';
 
-          // get the theme id
-          let themeId = `${themeName}Theme`; // <- returns eg: 'colorTheme'
+        // listen to the `onload` event
+        linkEl.onload = (ev) => {
+          // Add this `themeId` to the list of added assets
+          loadedAssetsList.push(themeId);
 
-          // get the name of the theme class
-          //let themeClassName = themeId.capitalize(); // <- returns eg.: ''
+          // Create a theme data object as `themeData`
+          let themeData = {id: themeId, name: themeName, url: themeUrl, ev};
 
-          // get the theme object from `module`
-          //let themeObject = eval(`new module.${themeClassName}(themeId)`);
-          let themeObject = Object();
+          // Add this `themeData` to the `loadedThemes` list
+          loadedThemes.push(themeData);
 
-          // Add this theme to the `loadedThemes` list
-          loadedThemes.push({ name: themeName, object: themeObject });
 
           // If the number of loaded themes is equal to the total themes to be loaded
           if (loadedThemes.length === themes.length) {
@@ -365,12 +379,17 @@ export const loaderMixin = {
           }
 
           // DEBUG [4dbsmaster]: tell me about it ;)
-          console.log(`\x1b[32m[_loadThemes](2): themeUrl => ${themeUrl} LOADED !!! module => \x1b[0m`, module);
-          // console.log(`\x1b[32m[_loadThemes](3): themeClassName => \x1b[0m`, themeClassName);
-        });
+          console.log(`\x1b[32m[_loadThemes](3): themeUrl => ${themeUrl} LOADED !!! themeData => \x1b[0m`, themeData);
+          
+        }; 
 
         // DEBUG [4dbsmaster]: tell me about it ;)
         console.log(`\x1b[32m[_loadThemes](1): themeName to be loaded => ${themeName}\x1b[0m`);
+        console.log(`\x1b[32m[_loadThemes](2): themeName.toCamelCase() => ${themeName.toCamelCase()}\x1b[0m`);
+
+
+        // add `linkEl` to the given shadowRoot
+        shadowRoot.appendChild(linkEl);
       }
 
     });
@@ -384,21 +403,22 @@ export const loaderMixin = {
   /**
    * Method used to load one or more stylesheets from the given `stylesDir`.
    *
-   * @param { Array } styles - list of styles to be loaded
-   * @param { String } stylesDir - directory of the styles 
-   *
    * Example usage:
    *
-   *    this._loadStyles([...SplashScreen.styles], STYLES_DIR).then((loadedStyles) => {
+   *    this._loadStyles(shadowRoot, [...SplashScreen.styles], STYLES_DIR).then((loadedStyles) => {
    *
    *      // do something awesome here after the styles have been loaded
    *
    *    });
    *
+   * @param { ShadowRoot } shadowRoot - the Shadow DOM where shared or specific themes will be injected. 
+   * @param { Array } styles - list of styles to be loaded
+   * @param { String } stylesDir - directory of the styles 
+   *
    * @returns { Promise } promise
    * @private
    */
-  _loadStyles(styles, stylesDir = STYLES_DIR) {
+  _loadStyles(shadowRoot, styles, stylesDir = STYLES_DIR) {
     
     // Create a promise
     let promise = new Promise((resolve, reject) => {
@@ -409,27 +429,31 @@ export const loaderMixin = {
       // For each style name...
       for (let styleName of styles) {
         // ...get the url of this style as `styleUrl`
-        let styleUrl = stylesDir + `${styleName}.css`; 
+        let styleUrl = stylesDir + `${styleName}-styles.css`; 
+        // get the style id
+        let styleId = `${styleName.toCamelCase()}Style`; // <- returns eg: 'colorStyle'
 
-        // dynamically import the `styleUrl`
-        import(styleUrl).then((module) => {
-          
-          // get the style id
-          let styleId = `${styleName}Theme`; // <- returns eg: 'colorTheme'
+        // create a `<link>` element as `linkEl`
+        let linkEl = document.createElement('link');
+        linkEl.id = styleId;
+        linkEl.href = styleUrl;
+        linkEl.rel = 'stylesheet';
 
-          // get the name of the style class
-          //let styleClassName = styleId.capitalize(); // <- returns eg.: ''
+        // listen to the `onload` event
+        linkEl.onload = (ev) => {
+          // Add this `styleId` to the list of added assets
+          loadedAssetsList.push(styleId);
 
-          // get the style object from `module`
-          //let styleObject = eval(`new module.${styleClassName}(styleId)`);
-          let styleObject = Object();
+          // Create a style data object as `styleData`
+          let styleData = {id: styleId, name: styleName, url: styleUrl, ev};
 
-          // Add this style to the `loadedStyles` list
-          loadedStyles.push({ name: styleName, object: styleObject });
+          // Add this `styleData` to the `loadedStyles` list
+          loadedStyles.push(styleData);
+
 
           // If the number of loaded styles is equal to the total styles to be loaded
           if (loadedStyles.length === styles.length) {
-            // ...resolve this promise w/ the `loadedStyles` 
+            // ...resolve this promise w/ the `loadedStyles`
             resolve(loadedStyles);
 
             // TODO: Call the `onStylesLoaded()` method
@@ -437,12 +461,17 @@ export const loaderMixin = {
           }
 
           // DEBUG [4dbsmaster]: tell me about it ;)
-          console.log(`\x1b[32m[_loadStyles](2): styleUrl => ${styleUrl} LOADED !!! module => \x1b[0m`, module);
-          // console.log(`\x1b[32m[_loadStyles](3): styleClassName => \x1b[0m`, styleClassName);
-        });
+          console.log(`\x1b[32m[_loadStyles](3): styleUrl => ${styleUrl} LOADED !!! styleData => \x1b[0m`, styleData);
+          
+        }; 
 
         // DEBUG [4dbsmaster]: tell me about it ;)
         console.log(`\x1b[32m[_loadStyles](1): styleName to be loaded => ${styleName}\x1b[0m`);
+        console.log(`\x1b[32m[_loadStyles](2): styleName.toCamelCase() => ${styleName.toCamelCase()}\x1b[0m`);
+
+
+        // add `linkEl` to the given shadowRoot
+        shadowRoot.appendChild(linkEl);
       }
 
     });
@@ -456,9 +485,6 @@ export const loaderMixin = {
   /**
    * Method used to load one or more animations from the given `animationsDir`.
    *
-   * @param { Array } animations - list of animations to be loaded
-   * @param { String } animDir - directory of the animations
-   *
    * Example usage:
    *
    *    this._loadAnimations(['fade-in', 'pop-in', 'slide-from-down'], ANIM_DIR).then((loadedAnimations) => {
@@ -467,10 +493,14 @@ export const loaderMixin = {
    *
    *    });
    *
+   * @param { ShadowRoot } shadowRoot - the Shadow DOM where shared or specific themes will be injected. 
+   * @param { Array } animations - list of animations to be loaded
+   * @param { String } animDir - directory of the animations
+   *
    * @returns { Promise } promise
    * @private
    */
-  _loadAnimations(animations, animDir = ANIM_DIR) {
+  _loadAnimations(shadowRoot, animations, animDir = ANIM_DIR) {
     
     // Create a promise
     let promise = new Promise((resolve, reject) => {
@@ -481,27 +511,31 @@ export const loaderMixin = {
       // For each animation name...
       for (let animationName of animations) {
         // ...get the url of this animation as `animationUrl`
-        let animationUrl = animDir + `${animationName}.css`; 
+        let animationUrl = animDir + `${animationName}-animation.css`; 
+        // get the animation id
+        let animationId = `${animationName.toCamelCase()}Animation`; // <- returns eg: 'colorStyle'
 
-        // dynamically import the `animationUrl`
-        import(animationUrl).then((module) => {
-          
-          // get the animation id
-          let animationId = `${animationName}Theme`; // <- returns eg: 'colorTheme'
+        // create a `<link>` element as `linkEl`
+        let linkEl = document.createElement('link');
+        linkEl.id = animationId;
+        linkEl.href = animationUrl;
+        linkEl.rel = 'stylesheet';
 
-          // get the name of the animation class
-          //let animationClassName = animationId.capitalize(); // <- returns eg.: ''
+        // listen to the `onload` event
+        linkEl.onload = (ev) => {
+          // Add this `animationId` to the list of added assets
+          loadedAssetsList.push(animationId);
 
-          // get the animation object from `module`
-          //let animationObject = eval(`new module.${animationClassName}(animationId)`);
-          let animationObject = Object();
+          // Create a animation data object as `animationData`
+          let animationData = {id: animationId, name: animationName, url: animationUrl, ev};
 
-          // Add this animation to the `loadedAnimations` list
-          loadedAnimations.push({ name: animationName, object: animationObject });
+          // Add this `animationData` to the `loadedStyles` list
+          loadedAnimations.push(animationData);
+
 
           // If the number of loaded animations is equal to the total animations to be loaded
           if (loadedAnimations.length === animations.length) {
-            // ...resolve this promise w/ the `loadedAnimations` 
+            // ...resolve this promise w/ the `loadedAnimations`
             resolve(loadedAnimations);
 
             // TODO: Call the `onAnimationsLoaded()` method
@@ -509,12 +543,17 @@ export const loaderMixin = {
           }
 
           // DEBUG [4dbsmaster]: tell me about it ;)
-          console.log(`\x1b[32m[_loadAnimations](2): animationUrl => ${animationUrl} LOADED !!! module => \x1b[0m`, module);
-          // console.log(`\x1b[32m[_loadAnimations](3): animationClassName => \x1b[0m`, animationClassName);
-        });
+          console.log(`\x1b[32m[_loadAnimations](3): animationUrl => ${animationUrl} LOADED !!! animationData => \x1b[0m`, animationData);
+          
+        }; 
 
         // DEBUG [4dbsmaster]: tell me about it ;)
-        console.log(`\x1b[32m[_loadAnimations](1): animationName to be loaded => ${animationName}\x1b[0m`);
+        console.log(`\x1b[32m[_loadStyles](1): animationName to be loaded => ${animationName}\x1b[0m`);
+        console.log(`\x1b[32m[_loadStyles](2): animationName.toCamelCase() => ${animationName.toCamelCase()}\x1b[0m`);
+
+
+        // add `linkEl` to the given shadowRoot
+        shadowRoot.appendChild(linkEl);
       }
 
     });
