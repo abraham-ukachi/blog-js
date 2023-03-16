@@ -193,7 +193,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | Pending |
 | 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | Pending |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
-| 23 | *`App - Class`* | **App.js** | _*In progress*_ |
+| 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
 | 24 | *`Screen- Class`* | **Screen.js** | _*In progress*_ |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
