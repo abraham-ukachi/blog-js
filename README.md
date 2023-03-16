@@ -175,7 +175,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 2 | *`Login - Page`* | **login-page.js** | Pending |
 | 3 | *`Profile - Page`* | **profile-page.js** | Pending |
 | 4 | *`Admin - Page`* | **admin-page.js** | Pending | 
-| 5 | *`Splash - Screen`* | **splash-screen.js** | Pending |
+| 5 | *`Splash - Screen`* | **splash-screen.js** | _*In progress*_ |
 | 6 | *`Logout - Page`* | **logout-page.js** | Pending |
 | 7 | *`Database - API`* | **Database.php** | Pending |
 | 8 | *`User - API`* | **User.php** | Pending |
