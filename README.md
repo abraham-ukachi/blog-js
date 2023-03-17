@@ -194,7 +194,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | Pending |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
-| 24 | *`Screen- Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
+| 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
 | 27 | *`Starter - Helper`* | **starter.js** | Pending |
@@ -204,6 +204,11 @@ These are some of the things we did or plan to do, in addition to this project's
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
 | 32 | *`Engine - Class`* | **Engine.js** | [Done](./src/Engine.js)\* |
 | 33 | *`Loader - Mixin`* | **loader-mixin.js** | [Done](./src/helpers/mixins/loader-mixin.js)\* |
+| 34 | *`Service - Mixin`* | **service-mixin.js** | Pending |
+| 35 | *`StorageWatcher - Helper`* | **storage-watcher.js** | Pending |
+| 36 | *`Event - Mixin`* | **event-mixin.js** | Pending |
+| 37 | *`LiveStorage - Helper`* | **LiveStorage.js** | Pending |
+
 
 > NOTE: (\*) = still needs to be updated. <br>
 > There's certainly a couple of file we must've forgot or not added yet, so we'll keep the above list updated obv. :)
