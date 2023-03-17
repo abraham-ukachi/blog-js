@@ -175,7 +175,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 2 | *`Login - Page`* | **login-page.js** | Pending |
 | 3 | *`Profile - Page`* | **profile-page.js** | Pending |
 | 4 | *`Admin - Page`* | **admin-page.js** | Pending | 
-| 5 | *`Splash - Screen`* | **splash-screen.js** | _*In progress*_ |
+| 5 | *`Splash - Screen`* | **splash-screen.js** | [Done](./src/screens/splash-screen.js)\* |
 | 6 | *`Logout - Page`* | **logout-page.js** | Pending |
 | 7 | *`Database - API`* | **Database.php** | Pending |
 | 8 | *`User - API`* | **User.php** | Pending |
@@ -207,7 +207,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 34 | *`Service - Mixin`* | **service-mixin.js** | Pending |
 | 35 | *`StorageWatcher - Helper`* | **storage-watcher.js** | Pending |
 | 36 | *`Event - Mixin`* | **event-mixin.js** | Pending |
-| 37 | *`LiveStorage - Helper`* | **LiveStorage.js** | Pending |
+| 37 | *`LiveStorage - Helper`* | **LiveStorage.js** | _*In progress*_ |
 
 
 > NOTE: (\*) = still needs to be updated. <br>
