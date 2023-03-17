@@ -613,7 +613,8 @@ export class Engine {
       // Get the current value of this property as `currentPropValue`
       let currentPropValue = this.#_props.value[propName];
 
-
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      // console.log(`\x1b[45m\x1b[2;30m[propertySetter]: propName => ${propName} & propValue => ${propValue}`, this.#_props);
       
       // If the current value is not the same as the given `propValue`... 
       if (currentPropValue !== propValue) {
@@ -653,6 +654,10 @@ export class Engine {
 
             // call the `propertiesUpdated()` handler with one argument: `changedProperties`
             this.propertiesUpdated(changedProperties);
+
+            // BUG FIXED: reset or empty the list of changed properties `#_changedProps`
+            //            by assigning it to an new empty array
+            this.#_changedProps = [];
 
           }, PROPERTY_UPDATE_DELAY);
 
