@@ -194,7 +194,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | Pending |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
-| 24 | *`Screen- Class`* | **Screen.js** | _*In progress*_ |
+| 24 | *`Screen- Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
 | 27 | *`Starter - Helper`* | **starter.js** | Pending |
