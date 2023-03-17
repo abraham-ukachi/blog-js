@@ -32,7 +32,7 @@
 *    -|> 
 *    -|> class App extends Engine {
 *    -|> 
-*    -|>  constructor() { super(App) }
+*    -|>  constructor() { super() }
 *    -|> 
 *    -|> }
 *
@@ -182,7 +182,7 @@ export class Engine {
    *
    * @param { Class } controller - The child class that inherits this `Engine` class
    */
-  constructor(controller) {
+  constructor(controller = this.constructor) {
     // Initialize the private `_controller` variable
     this.#_controller = controller;
     
@@ -240,6 +240,7 @@ export class Engine {
    *
    * @param { ShadowRoot }
    * @param { Number } timeout - in milliseconds
+   *
    * @returns { Promise } promise - resolve(loadedThemes, loadedStyles, loadedAnimations)
    */
   run(shadowRoot = this.shadowRoot, timeout = DEFAULT_RUN_TIMEOUT) {
