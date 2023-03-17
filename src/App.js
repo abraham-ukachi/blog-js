@@ -92,6 +92,12 @@ export const DEFAULT_VIEW = 'default';
 export const loadedAssetsList = [];
 
 
+// app children levels
+export const APP_SCREENS = 1;
+export const APP_PAGES = 2;
+export const APP_DIALOGS = 3;
+export const APP_MENUS = 4;
+export const APP_TOASTS = 5;
 
 
 
@@ -133,7 +139,9 @@ export class App extends Engine {
    * @type { Array }
    */
   static get styles() {
-    return [ 'splash-screen' ];
+    return [ 
+      // 'splash-screen' 
+    ];
   }
 
   /**
@@ -142,7 +150,10 @@ export class App extends Engine {
    * @type { Array }
    */
   static get animations() {
-    return [ 'pop-in' ];
+    return [ 
+      // 'fade-in',
+      // 'pop-in'
+    ];
   }
 
   /**
@@ -152,8 +163,8 @@ export class App extends Engine {
    */
   static get screens() {
     return {
-      splash: { name: 'splash-screen' },
-      welcome: { name: 'welcome-screen' }
+      // splash: { name: 'splash-screen' }
+      // welcome: { name: 'welcome-screen' }
     };
   }
 
@@ -244,26 +255,26 @@ export class App extends Engine {
     return html`
       
       <!-- App Container --> 
-      <div id="appContainer" class="theme ${this.theme}" lang="${this.lang}">
+      <div id="appContainer" class="theme ${this.theme}" lang="${this.lang}" fit>
 
         <!-- Screens -->
-        <div id="screens"></div>
+        <div id="screens" fit></div>
         <!-- End of Screens -->
 
         <!-- Pages -->
-        <div id="pages"></div>
+        <div id="pages" fit></div>
         <!-- End of Pages -->
 
         <!-- Dialogs -->
-        <div id="dialogs"></div>
+        <div id="dialogs" fit></div>
         <!-- End of Dialogs -->
 
         <!-- Menus -->
-        <div id="menus"></div>
+        <div id="menus" fit></div>
         <!-- End of Menus -->
 
         <!-- Toasts -->
-        <div id="toasts"></div>
+        <div id="toasts" fit></div>
         <!-- End of Toasts -->
 
       </div>
@@ -442,7 +453,43 @@ export class App extends Engine {
     // return the `title`
     return title;
   }
- 
+
+  
+  /**
+   * Returns the root of the given `appChild`
+   *
+   * Example usage:
+   *  let screensRoot = getRootOf(APP_SCREENS);
+   *
+   *
+   * @param { Number } appChild - Indirect children of app's container or `this.containerEl`
+   * @returns { Elememnt } root - eg. '<div id="screens">' if `appChild` is "screens"
+   */
+  getRootOf(appChild) {
+    // Declare the `root` variable
+    let root;
+
+    switch(appChild) {
+      case APP_SCREENS:
+        root = this.screensEl;
+        break;
+      case APP_PAGES:
+        root = this.pagesEl;
+        break;
+      case APP_DIALOGS:
+        root = this.dialogsEl;
+        break;
+      case APP_MENUS:
+        root = this.menusEl;
+        break;
+      case APP_TOASTS:
+        root = this.toastsEl;
+        break;
+    }
+
+    // return `root`
+    return root;
+  }
   
   /* >> Public Setters << */
 
@@ -516,6 +563,44 @@ export class App extends Engine {
   }
 
 
+  /**
+   * Returns the `<div id="screens">` element from the app's shadow root
+   *
+   * @returns { Element } 
+   */
+  get screensEl() {
+    return this.shadowRoot.getElementById('screens');
+  }
+
+
+  /**
+   * Returns the `<div id="pages">` element from the app's shadow root
+   *
+   * @returns { Element } 
+   */
+  get pagesEl() {
+    return this.shadowRoot.getElementById('pages');
+  }
+
+  /**
+   * Returns the `<div id="dialogs">` element from the app's shadow root
+   *
+   * @returns { Element } 
+   */
+  get dialogsEl() {
+    return this.shadowRoot.getElementById('dialogs');
+  }
+
+
+  /**
+   * Returns the `<div id="menus">` element from the app's shadow root
+   *
+   * @returns { Element } 
+   */
+  get menusEl() {
+    return this.shadowRoot.getElementById('menus');
+  }
+
 
   /* >> Private Methods << */
 
@@ -586,17 +671,26 @@ export class App extends Engine {
   /**
    * Handler that is called whenever the splash screen loads 
    *
-   * @param { Object } splashScreen
+   * @param { Class } SplashScreen
    */
-  _splashScreenLoadHandler(splashScreen) {
+  _splashScreenLoadHandler(SplashScreen) {
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[34m[_splashScreenLoadHandler](1): this.screensEl => `, this.screensEl);
+    console.log(`\x1b[34m[_splashScreenLoadHandler](2): SplashScreen => `, SplashScreen);
+
+    // get the root of all screens as `screensRoot`
+    const screensRoot = this.getRootOf('screens');
+    
     // assign the splash screen object to a app's `splashScreen` variable
-    this.splashScreen = splashScreen;
+    this.splashScreen = new SplashScreen('splash-screen');
 
     // remove the app's spinner 
     this._removeSpinner();
 
     // TODO: show the splash screen
-    // this.splashScreen.show();
+    this.splashScreen.show();
+    //this.splashScreen.run();
+
   }
 
 
