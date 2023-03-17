@@ -137,8 +137,10 @@ export const loaderMixin = {
           // get the name of the screen class
           let screenClassName = screenId.capitalize(); // <- returns eg.: 'SplashScreen'
 
-          // get the screen object from `module`
-          let screenObject = eval(`new module.${screenClassName}(screenId)`);
+          //console.warn(`module of screen => `, module);
+
+          // get the screen class from `module` as `screenObject`
+          let screenObject = module[screenClassName]; // eval(`new module.${screenClassName}(screenId)`);
 
           // Add this screen to the `loadedScreens` list
           loadedScreens.push({ name: screenName, object: screenObject });
@@ -201,7 +203,7 @@ export const loaderMixin = {
           let pageClassName = pageId.capitalize(); // <- returns eg.: 'HomePage'
 
           // get the page object from `module`
-          let pageObject = eval(`new module.${pageClassName}(pageId)`);
+          let pageObject = module[pageClassName]; //eval(`new module.${pageClassName}(pageId)`);
 
           // Add this page to the `loadedPages` list
           loadedPages.push({ name: pageName, object: pageObject });
@@ -273,7 +275,7 @@ export const loaderMixin = {
           let viewClassName = viewId.capitalize(); // <- returns eg.: 'DefaultHomeView'
 
           // get the view object from `module`
-          let viewObject = eval(`new module.${viewClassName}(viewId)`);
+          let viewObject = module[viewClassName];// eval(`new module.${viewClassName}(viewId)`);
 
           // Add this view to the `loadedViews` list
           loadedViews.push({ name: viewName, object: viewObject });
