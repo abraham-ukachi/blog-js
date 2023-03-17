@@ -31,7 +31,7 @@ The following tables (including a couple of TRIGGERS) were created in our **`db_
 
 > NOTE: For more info, [read the Database section](#Database) of this *README*. 
 
->   \*: [markdown-it](https://markdown-it.github.io/markdown-it/) and [mocha](https://www.npmjs.com/package/mocha) npm libraries were used for markdown parsing and testing respectively.
+>   \*: [markdown-it](https://markdown-it.github.io/markdown-it/) and [mocha](https://www.npmjs.com/package/mocha) npm libraries **could be** used for markdown parsing and testing respectively.
 
 
 ## Description 
@@ -181,16 +181,16 @@ These are some of the things we did or plan to do, in addition to this project's
 | 8 | *`User - API`* | **User.php** | Pending |
 | 9 | *`ResponseHandler - API`* | **ResponseHandler.php** | Pending |
 | 10 | *`Articles - API`* | **Articles.php** | Pending |
-| 11 | *`Pop In - Animation`* | **pop-in-animation.css** | Pending |
-| 12 | *`Fade In - Animation`* | **fade-in-animation.css** | Pending |
-| 13 | *`Slide From Down - Animation`* | **slide-from-down-animation.css** | Pending |
+| 11 | *`Pop In - Animation`* | **pop-in-animation.css** | [Done](./assets/animations/pop-in-animation.css) |
+| 12 | *`Fade In - Animation`* | **fade-in-animation.css** | [Done](./assets/animations/fade-in-animation.css) |
+| 13 | *`Slide From Down - Animation`* | **slide-from-down-animation.css** | [Done](./assets/animation/slide-from-down-animation.css) |
 | 14 | *`Language Update - API`* | **lang_update.php** | Pending |
 | 15 | *`Theme Update - API`* | **theme_update.php** | Pending |
 | 16 | *`Internationalization - API`* | **Internationalization.php** | Pending |
 | 17 | *`Settings - Page`* | **settings-page.js** | Pending |
 | 18 | *`Welcome - Screen`* | **welcome-screen.js** | Pending |
 | 19 | *`Goodbye - Page`* | **goodbye-page.js** | Pending |
-| 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | Pending |
+| 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css) |
 | 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | Pending |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
