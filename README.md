@@ -204,10 +204,9 @@ These are some of the things we did or plan to do, in addition to this project's
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
 | 32 | *`Engine - Class`* | **Engine.js** | [Done](./src/Engine.js)\* |
 | 33 | *`Loader - Mixin`* | **loader-mixin.js** | [Done](./src/helpers/mixins/loader-mixin.js)\* |
-| 34 | *`Service - Mixin`* | **service-mixin.js** | Pending |
-| 35 | *`StorageWatcher - Helper`* | **storage-watcher.js** | Pending |
-| 36 | *`Event - Mixin`* | **event-mixin.js** | Pending |
-| 37 | *`LiveStorage - Helper`* | **LiveStorage.js** | _*In progress*_ |
+| 34 | *`Service - Mixin`* | **service-mixin.js** | _*In progress*_ |
+| 35 | *`Event - Mixin`* | **event-mixin.js** | Pending |
+| 36 | *`LiveStorage - Helper`* | **LiveStorage.js** | _*In progress*_ |
 
 
 > NOTE: (\*) = still needs to be updated. <br>
