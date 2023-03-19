@@ -52,7 +52,7 @@
 *   4-|> // Restart service (inside a Class)
 *    -|> 
 *    -|> const storageServiceId = 300;
-*    -|> this.restartService(storageServiceId); 
+*    -|> this.restartService(storageServiceId, (storageService) => { this._storageServiceHandler(storageService) }); 
 *    -|> 
 */
 
@@ -67,7 +67,7 @@
 
 // defining some constant variables...
 
-const PREFIX_SERVICE_RUNNER = 'serviceRunner';
+const PREFIX_SERVICE_TIMER = 'serviceTimer';
 
 /**
  * `serviceMixin`
@@ -116,7 +116,70 @@ export const serviceMixin = {
     // launch the service runner
     this._launchServiceRunner(service, func);
 
+    // add this service to the `runningServices` list
+    this.#_runningServices.push(service);
+
     // return the `sid`
+    return sid;
+  }
+
+
+  /**
+   * Method used to stop a service with the given `serviceId`
+   *
+   * @param { Number } serviceId
+   *
+   * @returns { Boolean } Returns TRUE, if the the specified service was stopped successfully ;)
+   */
+  stopService(serviceId) {
+    // Initialize the `result` variable by setting it to FALSE.
+    let result = false;
+
+    // do nothing if there's no `serviceId`
+    if (typeof serviceId === 'undefined') { return }
+
+    // IDEA: Check if the given `serviceId` exists
+
+    // If a service with this `serviceId` exists...
+    if (this.verifyServiceId(serviceId)) {
+      // ...get the corresponding service timer as `serviceTimer`
+      let serviceTimer = this._getServiceTimerById(serviceId);
+      // stop / cancel the  `serviceTimer`
+      clearTimeout(serviceTimer);
+      // remove this service from the list
+      this._removeServiceById(serviceId);
+      // set `result` to TRUE
+      result = true;
+    }
+
+    // return `result`
+    return result;
+  }
+
+  /**
+   * Restarts the an already running service
+   *
+   * @param { Number } serviceId
+   * @param { Function } func
+   * @param { Number } delay
+   *
+   * @returns { Number } sid - a new service ID for the restarted service.
+   */
+  restartService(serviceId, func, delay = null) {
+    // get the actual service  as `service`
+    let service = this.getServiceById(serviceId);
+    // get the service name from `service` as `serviceName`
+    let serviceName = service.name;
+    // If no delay was given, use the current service delay
+    delay = delay ?? service.delay;
+
+    // stop the service
+    this.stopService(serviceId);
+
+    // restart the service
+    let sid = this.startService(serviceName, func, delay);
+
+    // return the sid;
     return sid;
   }
 
@@ -132,6 +195,38 @@ export const serviceMixin = {
     return this.#_runningServices.find((service) => service.id === randomServiceId) !== 'undefined';
   }
 
+
+  /**
+   * Returns a list of all currently running services
+   *
+   * @param { Boolean } onlyIds - If TRUE, only the service ids will be returned
+   *
+   * @returns { Array[Object] } allServices
+  */
+  getAllServices(onlyIds = false) {
+    // Initialize the `allServices` variable
+    let allServices = this.#_runningServices;
+
+    if (onlyIds) {
+      allServices = allServices.map((service) => service.sid);
+    }
+
+    // return `allServices`
+    return allServices;
+  }
+
+  /**
+   * Returns the service of the given `serviceId`
+   *
+   * @param { Number } serviceId
+   *
+   * @returns { Object }
+   */
+  getServiceById(serviceId) {
+    return this.#_runningServices.find((service) => service.sid === serviceId);
+  }
+
+
   /* >>> public getters <<< */
 
   /* >>> public setters <<< */
@@ -142,26 +237,27 @@ export const serviceMixin = {
   /* >>> private methods <<< */
 
   /**
-   * Launches a service runner
+   * Launches a service timer
    * NOTE: This is a recursive function
    *
    * @param { Object } service - the service object containing the name, service id, timestamp and delay of the service to run
    * @param { Function } func - A callback function
    */
-  _launchServiceRunner(service, func) {
-    // setup a service runner using the service id (e.g. 'serviceRunner324'
-    this[PREFIX_SERVICE_RUNNER + service.sid] = setTimeout((timer) => {
+  _launchServiceTimer(service, func) {
+    // setup a service timer using the service id (e.g. 'serviceTimer324'
+    this[PREFIX_SERVICE_TIMER + service.sid] = setTimeout((timer) => {
       // add a runtime to the service
       service.runtime = this._getCurrentTimestamp() - service.timestamp;
 
       // call back the `func`
       func(service, timer);
 
-      // re-run the this launcher
-      this._launcherServiceRunner(service, func);
+      // re-run the this timer
+      this._launcherServiceTimer(service, func);
 
     }, service.delay);
   }
+
 
   /**
    * Returns a random service ID.
@@ -192,6 +288,31 @@ export const serviceMixin = {
    */
   _getCurrentTimestamp() {
     return (new Date()).getTime();
+  }
+
+  /**
+   * Returns the service timer of the given `serviceId`
+   * 
+   * @param { Number } serviceId
+   * @returns { setTimeout } serviceTimer
+   */
+  _getServiceTimerById(serviceId) {
+    return this[PREFIX_SERVICE_TIMER + serviceId];
+  }
+
+
+  /**
+   * Method used to remove a service from the `#_runningServices` list, 
+   * using the specified `serviceId`
+   *
+   * @param { Number } serviceId
+   */
+  _removeServiceById(serviceId) {
+    // get the index of this service as `serviceIndex`
+    let serviceIndex = this.#_runningServices.findIndex((service) => service.sid === serviceId);
+
+    // remove the service from `_runningServices`, using the given `serviceId`
+    this.#_runningServices.splice(serviceIndex, 1);
   }
 
   /* >>> private getters <<< */
