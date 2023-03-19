@@ -70,6 +70,14 @@
 const PREFIX_SERVICE_TIMER = 'serviceTimer';
 
 /**
+ * List of currently running serivces
+ *
+ * @type { Array[Object] }
+ * @private
+ */
+const runningServices = [];
+
+/**
  * `serviceMixin`
  * This is a mixin that is used to start, stop, restart and verify a service.
  * NOTE: A recursive method is used in this mixin for better performance.
@@ -78,18 +86,6 @@ const PREFIX_SERVICE_TIMER = 'serviceTimer';
  *  (See above examples)
  */
 export const serviceMixin = {
-
-  // public properties
-   
-  // private properties
-
-  /**
-   * List of currently running serivces
-   *
-   * @type { Array[Object] }
-   * @private
-   */
-  #_runningServices = [];
 
 
   /* >>> public methods <<< */
@@ -117,11 +113,11 @@ export const serviceMixin = {
     this._launchServiceRunner(service, func);
 
     // add this service to the `runningServices` list
-    this.#_runningServices.push(service);
+    runningServices.push(service);
 
     // return the `sid`
     return sid;
-  }
+  },
 
 
   /**
@@ -154,7 +150,7 @@ export const serviceMixin = {
 
     // return `result`
     return result;
-  }
+  },
 
   /**
    * Restarts the an already running service
@@ -181,7 +177,7 @@ export const serviceMixin = {
 
     // return the sid;
     return sid;
-  }
+  },
 
 
   /**
@@ -192,8 +188,8 @@ export const serviceMixin = {
    * @returns { Boolean } - returns TRUE, if the specified service ID was found.
   */
   verifyServiceId(serviceId) {
-    return this.#_runningServices.find((service) => service.id === randomServiceId) !== 'undefined';
-  }
+    return runningServices.find((service) => service.id === randomServiceId) !== 'undefined';
+  },
 
 
   /**
@@ -205,7 +201,7 @@ export const serviceMixin = {
   */
   getAllServices(onlyIds = false) {
     // Initialize the `allServices` variable
-    let allServices = this.#_runningServices;
+    let allServices = runningServices;
 
     if (onlyIds) {
       allServices = allServices.map((service) => service.sid);
@@ -213,7 +209,7 @@ export const serviceMixin = {
 
     // return `allServices`
     return allServices;
-  }
+  },
 
   /**
    * Returns the service of the given `serviceId`
@@ -223,8 +219,8 @@ export const serviceMixin = {
    * @returns { Object }
    */
   getServiceById(serviceId) {
-    return this.#_runningServices.find((service) => service.sid === serviceId);
-  }
+    return runningServices.find((service) => service.sid === serviceId);
+  },
 
 
   /* >>> public getters <<< */
@@ -256,7 +252,7 @@ export const serviceMixin = {
       this._launcherServiceTimer(service, func);
 
     }, service.delay);
-  }
+  },
 
 
   /**
@@ -279,7 +275,7 @@ export const serviceMixin = {
 
     // Return the `randomServiceId`
     return randomServiceId;
-  }
+  },
 
   /**
    * Returns the current timestamp
@@ -288,7 +284,7 @@ export const serviceMixin = {
    */
   _getCurrentTimestamp() {
     return (new Date()).getTime();
-  }
+  },
 
   /**
    * Returns the service timer of the given `serviceId`
@@ -298,22 +294,22 @@ export const serviceMixin = {
    */
   _getServiceTimerById(serviceId) {
     return this[PREFIX_SERVICE_TIMER + serviceId];
-  }
+  },
 
 
   /**
-   * Method used to remove a service from the `#_runningServices` list, 
+   * Method used to remove a service from the `runningServices` list, 
    * using the specified `serviceId`
    *
    * @param { Number } serviceId
    */
   _removeServiceById(serviceId) {
     // get the index of this service as `serviceIndex`
-    let serviceIndex = this.#_runningServices.findIndex((service) => service.sid === serviceId);
+    let serviceIndex = runningServices.findIndex((service) => service.sid === serviceId);
 
     // remove the service from `_runningServices`, using the given `serviceId`
-    this.#_runningServices.splice(serviceIndex, 1);
-  }
+    runningServices.splice(serviceIndex, 1);
+  },
 
   /* >>> private getters <<< */
 
