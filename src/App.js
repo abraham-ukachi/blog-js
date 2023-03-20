@@ -37,6 +37,8 @@
 
 import { html, Engine } from './Engine.js'; // <- we just need stuff from our custom engine to get started #LOL !!! :)
 // import { eventMixin } from './helpers/mixins/event-mixin.js';
+import { installStorageWatcher } from './helpers/LiveStorage.js';
+
 
 "use strict"; 
 // ^^^^^^^^^ This keeps us on our toes, as it forces us to use all pre-defined variables, among other things 😅
@@ -100,12 +102,22 @@ export const APP_MENUS = 4;
 export const APP_TOASTS = 5;
 
 
+// themes
+// export const CLASSIC_THEME = 'classic';
+// export const LIGHT_THEME = 'light';
+// export const DARK_THEME = 'dark';
+
+
 
 // TODO: Turn the App into a custom element by extending `HTMLElement`
 
 
 // Create a `App` class
 export class App extends Engine {
+  // some app specific constants
+  static get CLASSIC_THEME() { return 'classic' }
+  static get LIGHT_THEME() { return 'light' }
+  static get DARK_THEME() { return 'dark' }
 
   /**
    * Properties
@@ -205,6 +217,9 @@ export class App extends Engine {
     this.lang = lang;
     this.theme = theme;
 
+    // show / log a welcome message
+    this.#showWelcomeMessage();
+
     // create the app
     this.#create();
 
@@ -290,6 +305,9 @@ export class App extends Engine {
    * @override from `Engine`
    */
   firstUpdated() {
+
+    // install a storage watcher from 'LiveStorage'
+    installStorageWatcher(this, ['lang', 'theme'], (changedStorageItems) => this._handleChangedStorageItems(changedStorageItems));
   
     // add event listeners here 
 
@@ -311,6 +329,10 @@ export class App extends Engine {
    */
   propertiesUpdated(changedProperties) {
     changedProperties.forEach((prop) => {
+
+      if (['lang', 'theme'].includes(prop.name)) {
+        this.liveStorage.setItem(prop.name, prop.value);
+      }
 
       if (prop.name === 'updated' && prop.value === true) {
         // call the first updated method
@@ -394,6 +416,7 @@ export class App extends Engine {
 
     // Load the splash screen
     this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this._onScreensLoaded(loadedScreens));
+    
     
     
     // DEBUG [4dbsmaster]: tell me about it ;)
@@ -489,6 +512,22 @@ export class App extends Engine {
 
     // return `root`
     return root;
+  }
+
+  /**
+   * Method used to update the theme 
+   *
+   * @param { String } newTheme - """c'mon, this is pretty self-explanatory, isn't it? ;)"""
+   */
+  updateTheme(newTheme) {
+    // do nothing if there's no theme
+    // TODO: Make sure the given `theme` is supported before proceeding
+    if (typeof theme === 'undefined') { return }
+
+    // remove all themes in `containerEl`
+    this.containerEl.classList.remove(App.CLASSIC_THEME, App.LIGHT_THEME, App.DARK_THEME);
+    // update the theme
+    this.containerEl.classList.add(theme);
   }
   
   /* >> Public Setters << */
@@ -605,6 +644,17 @@ export class App extends Engine {
   /* >> Private Methods << */
 
   /**
+   * Handler that is called whenever an item changes in `liveStorage`
+   * 
+   * @param { Array[Object] } changedStorageItems
+   */
+  _handleChangedStorageItems(changedStorageItems) {
+    // DEBUG [4dbsmaster]: tell me about these changed storage items ;)
+    console.log(`\x1b[33m[_handleChangedStorageItems]: changedStorageItems => \x1b[0m`, changedStorageItems);
+  }
+
+
+  /**
    * Creates the app
    * NOTE: This method will create a template element with the formatted html from `render()`, 
    *       and add it to the corresponding host in DOM.
@@ -642,9 +692,25 @@ export class App extends Engine {
     }
       
 
+  }
 
-    
+  /**
+   * Shows or outpus a welcome message to browser's console
+   *
+   * @param { String } title
+   * @param { String } message
+   */
+  #showWelcomeMessage(title = APP_NAME, message = "welcome to our blog") {
+    // display something like this first: -------------------------------
+    console.log(`\x1b[2m${'-'.padEnd(50, ' -')}\x1b[0m`);
 
+    // log the title
+    console.log(`%c\`${title}\``, 'color:brown; font-size:40px');
+    // log the message
+    console.log(`\x1b[1m${message}\x1b[0m`);
+
+    // display something like this last: -------------------------------
+    console.log(`\x1b[2;37m${'-'.padEnd(50, ' -')}\n\x1b[0m`);
   }
 
 
@@ -690,6 +756,10 @@ export class App extends Engine {
     // TODO: show the splash screen
     this.splashScreen.show();
     //this.splashScreen.run();
+    
+    
+    // install a storage watcher from 'LiveStorage'
+    // installStorageWatcher(this, ['lang', 'theme'], (changedStorageItems) => this._handleChangedStorageItems(changedStorageItems));
 
   }
 
