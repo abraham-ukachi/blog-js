@@ -197,8 +197,8 @@ These are some of the things we did or plan to do, in addition to this project's
 | 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
-| 27 | *`Starter - Helper`* | **starter.js** | Pending |
-| 28 | *`Router - Helper`* | **router.js** | Pending |
+| 27 | *`Starter - Helper`* | **starter.js** | ~Pending~ |
+| 28 | *`Router - Helper`* | **router.js** | _*In progress*_ |
 | 29 | *`Default Home - View`* | **default-home-view.js** | Pending |
 | 30 | *`Default Login - View`* | **default-login-view.js** | Pending |
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
