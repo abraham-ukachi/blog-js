@@ -29,7 +29,7 @@
 * Example usage:
 *   1-|> import { LiveStorage } from './src/helpers/LiveStorage.js';
 *    -|>
-*    -|> const liveStorage = new LiveStorage(500);
+*    -|> const liveStorage = new LiveStorage('preferences', 10); // <- 10 seconds interval
 *    -|>
 *    -|> // set multiple items in your browser's local storage
 *    -|> liveStorage.setItems({ lang: 'en', theme: 'dark', shape: 'circle' });
@@ -41,7 +41,14 @@
 *    -|>   
 *
 *
-*   3-|> // Watch an item or multiple items for their live updates / changes
+*   3-|> // Actively watch a set of keys with a callback
+*    -|>
+*    -|> this.liveStorage.watch(['lang', 'theme'], callback);
+*    -|>
+*     |
+*   --OR--
+*     |
+*    -|> // Watch an item or multiple items for their live updates / changes
 *    -|> import { installStorageWatcher } from './src/helpers/LiveStorage.js';
 *    -|> 
 *    -|> class App extends Engine {
@@ -63,8 +70,8 @@ import { serviceMixin } from './mixins/service-mixin.js';
 
 // Defining some constant variables...
 
-const DEFAULT_LIVESTORAGE_DELAY = 1000; // <- 1 second
-const LIVESTORAGE_SERVICE_NAME = 'live-storage';
+const DEFAULT_LIVESTORAGE_DELAY = 10; // <- 10 second
+const DEFAULT_LIVESTORAGE_NAME = 'live-storage';
 
 
 // Creating a `LiveStorage` class...
@@ -80,19 +87,31 @@ export class LiveStorage {
 
   // Define some public attributes
 
+  // watch list
   #watchlist = [];
+  // snapshot of the current storage
+  #snapshot = {};
  
   // Define some private attributes
 
   /**
    * Constructor of this `LiveStorage` class
    * NOTE: This constructor will be executed automatically whenever an object of this `LiveStorage` is created.
+   *
+   * @param { String } name - liveStorage name, used as service name
+   * @param { Number } delay 
    */
-  constructor(delay = DEFAULT_LIVESTORAGE_DELAY) {
+  constructor(name = DEFAULT_LIVESTORAGE_NAME, delay = DEFAULT_LIVESTORAGE_DELAY) {
     this.delay = delay; 
 
+    // TODO: auto-increment the name if it already exists (e.g. 'live-storage1', 'live-storage2', etc)
+
     // start a service named 'live-storage'
-    this.startService(LIVESTORAGE_SERVICE_NAME, (storageService) => this._storageServiceHandler(storageService), delay);
+    this.startService(name, (storageService) => this._storageServiceHandler(storageService), delay);
+    // TEST: this.startService('bobo', (storageService) => console.log(`[bobo]: storageService ==> `, storageService), 10);
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[40m\x1b[32m[constructor](LiveStorage): delay => ${delay} & this.startService\x1b[0m`, this.startService);
   }
 
 
@@ -113,6 +132,7 @@ export class LiveStorage {
 
     // If no given key in `keys` is currently in the watchlist...
     if (!this.checkWatchlist(...keys)) {
+
       // ...create a watchlist object as `watchlistObj`
       let watchlistObj = {handler, keys};
 
@@ -132,12 +152,13 @@ export class LiveStorage {
    * Method used to set one or more `items` in the browser's local storage
    *
    * @param { Object } items - to be stored in the live storage (e.g. { lang: 'en', theme: 'dark' })
+   * @param { Boolean } replaceValues - If TRUE an item was already set, its value will be replaced or overriden.
    */
-  setItems(items) {
+  setItems(items, replaceValues = false) {
     // loop through the given `items`
     Object.entries(items).map(([key, value]) => {
       // store the key/value item in localStorage
-      this.setItem(key, value);
+      this.setItem(key, value, replaceValues);
     });
   }
 
@@ -196,12 +217,18 @@ export class LiveStorage {
    *
    * @param { String } key
    * @param { String|Number|Boolean } value
+   * @param { Boolean } replaceValue - If TRUE and `key` was already set, it's value will be replaced or overriden.
+   *
+   * @returns { Boolean } result - Returns TRUE if the item was set or saved in localStorage successfully
    */
-  setItem(key, value) {
+  setItem(key, value, replaceValue = false) {
+    // Initialize the `result` variable
+    let result = false;
+
     // TODO: Make sure browser supports Storage before proceeding
 
-    // If there's no item with this key in storage...
-    if (!this.hasItems(key)) {
+    // If there's no item with this key in storage or `replace` is TRUE...
+    if (!this.hasItems(key) || replaceValue === true) {
       // ...define a property setter & getter of this item
       Object.defineProperty(this, key, {
 
@@ -216,10 +243,17 @@ export class LiveStorage {
         enumerable: true,
         configurable: true
       });
+
+
+      // assign the given `value` to the specified `key`.
+      this[key] = value;
+
+      // set `result` to TRUE
+      result = true;
     }
 
-    // assign the given `value` to the specified `key`.
-    this[key] = value;
+    // return result
+    return result;
 
   }
 
@@ -263,6 +297,25 @@ export class LiveStorage {
 
   /* >> public getters << */
 
+  /**
+   * Returns a list of keys in the watchlist
+   *
+   * @returns { Array } 
+   */
+  get watchlistKeys() {
+    // Initialize the `result` variable by setting it to an empty array
+    let result = [];
+
+    // Map all the keys in `#watchlist`
+    this.#watchlist.map((list) => {
+      // add the keys from this `list` to `result`
+      result.push(...list.keys);
+    });
+
+    // return `result`
+    return result;
+  }
+
   
   /**
    * Returns TRUE, if the current browser supports `Storage`
@@ -281,15 +334,65 @@ export class LiveStorage {
   /* >> private methods << */
 
   /**
+   * Method used to take a snapshot of the current storage,
+   * and updates the `#snapshot` object accordingly
+   */
+  _takeStorageSnapshot() {
+    // loop through all the current keys from watchlist
+    this.watchlistKeys.forEach((watchlistKey) => {
+      // ...update the snapshot
+      this.#snapshot[watchlistKey] = this.getItem(watchlistKey);
+    });
+
+    // DEBUG [4dbsmaster]: tell me about this snapshot
+    // console.log(`\x1b[46m\x1b[2;30m[_takeStorageSnapshot](1): watchlistKeys => \x1b[0m`, this.watchlistKeys);
+    // console.log(`\x1b[46m\x1b[2;30m[_takeStorageSnapshot](2): snapshot => \x1b[0m`, this.#snapshot);
+  }
+
+  /**
    * A service handler that is called whenever every `delay` milliseconds
    *
    * @param { Object } service
    */
   _storageServiceHandler(service) {
+    // If the number of keys in watchlist is not the same as the keys in snapshot...
+    if (this.watchlistKeys.length !== Object.keys(this.#snapshot).length) {
+      // ...take a snapshot of the storage
+      this._takeStorageSnapshot();
+    }
 
+
+    // Loop through the `#watchlist` extracting its keys and corresponiding handler
+    this.#watchlist.forEach((list) => {
+
+      // create a `changedItems` object variable
+      let changedItems = [];
+
+      list.keys.forEach((key) => {
+        // get the value of this key as `value`
+        let value = this.getItem(key);
+
+        // if the `value` of the key in watchlist is not the same as that in the snapshot...
+        if (value !== this.#snapshot[key]) {
+          // ...create and 'key/value' item and add it to the `changedItems` list
+          changedItems.push({key, value});
+        }
+      });
+
+      // If the `changedItems` list is not empty, 
+      // call the `handler` with the changed items
+      if (changedItems.length) list.handler(changedItems);
+
+    });
+
+    // update the storage snapshot
+    this._takeStorageSnapshot();
+
+    
     // DEBUG [4dbsmaster]: tell me about this awesome service handler ;)
-    console.log(`\x1b[45m\x1b[2;34m[_storageServiceHandler](1): service => ${eval(service)}\x1b[30m`);
-    console.log(`\x1b[45m\x1b[2;34m[_storageServiceHandler](1): watchlist => \x1b[30m`, this.#watchlist);
+    // console.log(`\x1b[46m\x1b[2;30m[_storageServiceHandler](1): service => \x1b[0m`, service);
+    // console.log(`\x1b[46m\x1b[2;30m[_storageServiceHandler](2): #watchlist => \x1b[0m`, this.#watchlist);
+    // console.log(`\x1b[46m\x1b[2;30m[_storageServiceHandler](3): #snapshot => \x1b[0m`, this.#snapshot);
   }
 
 
