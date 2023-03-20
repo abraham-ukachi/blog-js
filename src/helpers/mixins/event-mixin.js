@@ -118,7 +118,7 @@ export const eventMixin = {
 
     // add `handler` to the list 
     this._eventHandlers[eventName].push(handler);
-  }
+  },
 
 
   /**
