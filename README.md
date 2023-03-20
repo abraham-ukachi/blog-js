@@ -191,13 +191,13 @@ These are some of the things we did or plan to do, in addition to this project's
 | 18 | *`Welcome - Screen`* | **welcome-screen.js** | Pending |
 | 19 | *`Goodbye - Page`* | **goodbye-page.js** | Pending |
 | 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css) |
-| 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | Pending |
+| 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | _*In progress*_ |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
 | 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
-| 27 | *`Starter - Helper`* | **starter.js** | ~Pending~ |
+| 27 | *`Starter - Helper`* | **starter.js** | ~~Pending~~ |
 | 28 | *`Router - Helper`* | **router.js** | _*In progress*_ |
 | 29 | *`Default Home - View`* | **default-home-view.js** | Pending |
 | 30 | *`Default Login - View`* | **default-login-view.js** | Pending |
