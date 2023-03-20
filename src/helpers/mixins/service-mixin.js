@@ -35,7 +35,7 @@
 *
 *   2-|> // Start or launch a service (inside a Class)
 *    -|>
-*    -|> const delay = 1000; // <- every 1 second
+*    -|> const delay = 60; // <- every 60 second
 *    -|>
 *    -|> const storageServiceId = this.startService('Storage', (storageService) => { 
 *    -|>  this._storageServiceHandler(storageService)
@@ -94,8 +94,8 @@ export const serviceMixin = {
    * Method used to start a new service
    *
    * @param { String } name - the service name
-   * @param { Function } func - a callback function to be executed every `delay` milliseconds.
-   * @param { Number } delay - the time, in milliseconds the timer should delay in between executions of the specific function
+   * @param { Function } func - a callback function to be executed every `delay` seconds.
+   * @param { Number } delay - the time, in seconds the timer should delay in between executions of the specific function
    *
    * @returns { Number } sid - a unique service ID for the newly activated service.
    */
@@ -109,11 +109,14 @@ export const serviceMixin = {
     // create a service object as `service` with the specified `name`, `sid`, `timestamp` and `delay`
     let service = {name, sid, timestamp, delay};
 
-    // launch the service runner
-    this._launchServiceRunner(service, func);
+    // launch the service timer
+    this._launchServiceTimer(service, func);
 
     // add this service to the `runningServices` list
     runningServices.push(service);
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[44m\x1b[2m[startService]: name => ${name} & sid => ${sid} & timestamp => ${timestamp}\x1b[0m`);
 
     // return the `sid`
     return sid;
@@ -188,7 +191,13 @@ export const serviceMixin = {
    * @returns { Boolean } - returns TRUE, if the specified service ID was found.
   */
   verifyServiceId(serviceId) {
-    return runningServices.find((service) => service.id === randomServiceId) !== 'undefined';
+    // look/find for exact index of the given `serviceId` in the list of `runningServices` as `serviceIndex`
+    let serviceIndex = runningServices.findIndex((service) => service.sid === serviceId);
+
+    // if the `serviceIndex` is not -1, that means it was found in the list 
+    let foundService = (serviceIndex !== -1) ? true : false; // <- NN ik ;)
+
+    return foundService;
   },
 
 
@@ -248,10 +257,10 @@ export const serviceMixin = {
       // call back the `func`
       func(service, timer);
 
-      // re-run the this timer
-      this._launcherServiceTimer(service, func);
+      // re-run the service launcher
+      this._launchServiceTimer(service, func);
 
-    }, service.delay);
+    }, service.delay * 1000);
   },
 
 
@@ -266,8 +275,14 @@ export const serviceMixin = {
     // by setting it to a random number between 1 and 1000
     let randomServiceId = Math.floor(Math.random(1) * 1000);
 
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[4;1;34m[_getRandomServiceId](1): randomServiceId => ${randomServiceId}\x1b[0m`);
+    console.log(`\x1b[4;1;34m[_getRandomServiceId](2): this.verifyServiceId => ${this.verifyServiceId(randomServiceId)}\x1b[0m`);
+    console.log(`\x1b[4;1;34m[_getRandomServiceId](3): runningServices => \x1b[0m`, runningServices);
+
     // Making sure our service Id is actually random and unique...
     // If `randomServiceID` already exists...
+    
     while (this.verifyServiceId(randomServiceId) == true) {
       // ...generate a new service otherwise
       randomServiceId = Math.floor(Math.random(1) * 1000);
@@ -309,7 +324,7 @@ export const serviceMixin = {
 
     // remove the service from `_runningServices`, using the given `serviceId`
     runningServices.splice(serviceIndex, 1);
-  },
+  }
 
   /* >>> private getters <<< */
 
