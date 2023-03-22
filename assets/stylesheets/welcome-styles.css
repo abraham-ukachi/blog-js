@@ -35,7 +35,7 @@
 /* ==== WELCOME STYLES === */
 
 
-:root {
+:host {
   /* Doodles */
   --account-doodle: url('../images/doodles/doodle-account.svg');
   --edit-doodle: url('../images/doodles/doodle-edit.svg');
