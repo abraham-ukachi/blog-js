@@ -188,7 +188,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 15 | *`Theme Update - API`* | **theme_update.php** | Pending |
 | 16 | *`Internationalization - API`* | **Internationalization.php** | Pending |
 | 17 | *`Settings - Page`* | **settings-page.js** | Pending |
-| 18 | *`Welcome - Screen`* | **welcome-screen.js** | Pending |
+| 18 | *`Welcome - Screen`* | **welcome-screen.js** | _*In progress*_ |
 | 19 | *`Goodbye - Page`* | **goodbye-page.js** | Pending |
 | 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css) |
 | 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | _*In progress*_ |
