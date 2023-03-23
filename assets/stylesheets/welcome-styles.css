@@ -40,7 +40,7 @@
   --account-doodle: url('../images/doodles/doodle-account.svg');
   --edit-doodle: url('../images/doodles/doodle-edit.svg');
   --delete-doodle: url('../images/doodles/doodle-delete.svg');
-  --blog-js-doodle: url('../images/doodles/doodle-tdl.svg');
+  --peace-n-love-doodle: url('../images/doodles/doodle-peace-n-love.svg');
   --language-doodle: url('../images/doodles/doodle-language.svg');
   --theme-doodle: url('../images/doodles/doodle-paint.svg');
 
@@ -56,6 +56,7 @@
   height: var(--doodle-size, 250px);
   background: var(--doodle-color, var(--on-background-color));
   opacity: var(--doodle-opacity, var(--opacity-icon-inactive));
+  margin: 0 auto;
 
   -webkit-mask: var(--doodle-image) no-repeat 50% 50%;
   -moz-mask: var(--doodle-image) no-repeat 50% 50%;
@@ -83,9 +84,9 @@
   --doodle-image: var(--language-doodle);
 }
 
-/* DDD Doodle */
-.blog-js-doodle {
-  --doodle-image: var(--blog-js-doodle);
+/* Peace & Love Doodle */
+.peace-n-love-doodle {
+  --doodle-image: var(--peace-n-love-doodle);
 }
 
 
@@ -109,16 +110,33 @@
   --doodle-image: var(--dashboard-doodle);
 }
 
+#content {
+  overflow: hidden;
+}
+
 /* Container of Content */
 #content > .container {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
   text-align: center;
-  height: auto;
+  overflow: scroll;
+  height: 100%;
+}
+
+/* Views in Content */
+/* Hide all views except animating and active views */
+#content > .view:not([animating]):not([active]) {
+  display: none;
 }
 
 
 /* Display Subtitle */
 .display-subtitle {
   max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 
@@ -156,8 +174,8 @@ footer button {
  margin: 8px 0;
 }
 
-/* Navigation Buttons / Link Buttons in Dots */
-#dots > a[role="button"] {
+/* Dot of Dots */
+#dots > .dot {
   width: 10px;
   height: 10px;
   background: var(--on-background-color);
@@ -167,6 +185,7 @@ footer button {
   min-width: initial;
   border-radius: 20px;
   opacity: var(--opacity-md-icon-disabled);
+  cursor: pointer;
 
 
   -webkit-transition: opacity 100ms ease;
@@ -176,12 +195,12 @@ footer button {
 }
 
 /* Whenever a dot is hovered */
-#dots > a[role="button"]:hover {
+#dots > .dot:hover {
   opacity: var(--opacity-md-active);
 }
 
 /* Whenever a dot gains focus */
-#dots > a[role="button"]:focus-visible {
+#dots > .dot:focus-visible {
   outline: 4px solid var(--tertiary-color);
   opacity: var(--opacity-md-active);
   /* background: var(--tertiary-color); */
@@ -189,7 +208,7 @@ footer button {
 
 
 /* Active Navigation Button */
-#dots > a[role="button"][active] {
+#dots > .dot[active] {
   width: 40px;
   background: var(--primary-color);
   opacity: var(--opacity-md-active);
