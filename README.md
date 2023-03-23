@@ -191,7 +191,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 18 | *`Welcome - Screen`* | **welcome-screen.js** | _*In progress*_ |
 | 19 | *`Goodbye - Page`* | **goodbye-page.js** | Pending |
 | 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css) |
-| 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | [](./assets/stylesheets/welcome) |
+| 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | [Done](./assets/stylesheets/welcome-styles.css)\* |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
 | 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
