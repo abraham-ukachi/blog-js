@@ -210,7 +210,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 37 | *`Slide Left - Animation`* | **slide-left-animation.css** | [Done](./assets/animations/slide-left-animation.css) |
 | 38 | *`Slide From Left - Animation`* | **slide-from-left-animation.css** | [Done](./assets/animations/slide-from-left-animation.css) |
 | 39 | *`Slide Right - Animation`* | **slide-right-animation.css** | [Done](./assets/animations/slide-right-animation.css) |
-| 40 | *`Slide From Right - Animation`* | **slide-from-right-animation.css** | Pending |
+| 40 | *`Slide From Right - Animation`* | **slide-from-right-animation.css** | _*In progress*_ |
 
 
 > NOTE: (\*) = still needs to be updated. <br>
