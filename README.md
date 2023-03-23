@@ -207,9 +207,9 @@ These are some of the things we did or plan to do, in addition to this project's
 | 34 | *`Service - Mixin`* | **service-mixin.js** | [Done](./src/helpers/mixins/service-mixin.js)\* |
 | 35 | *`Event - Mixin`* | **event-mixin.js** | [Done](./src/helpers/mixins/event-mixin.js)\* |
 | 36 | *`LiveStorage - Helper`* | **LiveStorage.js** | [Done](./src/helpers/LiveStorage.js)\* |
-| 37 | *`Slide Left - Animation`* | **slide-left-animation.css** | _*In progress*_ |
+| 37 | *`Slide Left - Animation`* | **slide-left-animation.css** | [Done](./assets/animations/slide-left-animation.css)\* |
 | 38 | *`Slide From Left - Animation`* | **slide-from-left-animation.css** | Pending |
-| 39 | *`Slide Right - Animation`* | **slide-right-animation.css** | Pending |
+| 39 | *`Slide Right - Animation`* | **slide-right-animation.css** | _*In progress*_ |
 | 40 | *`Slide From Right - Animation`* | **slide-from-right-animation.css** | Pending |
 
 
