@@ -191,14 +191,14 @@ These are some of the things we did or plan to do, in addition to this project's
 | 18 | *`Welcome - Screen`* | **welcome-screen.js** | _*In progress*_ |
 | 19 | *`Goodbye - Page`* | **goodbye-page.js** | Pending |
 | 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css) |
-| 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | _*In progress*_ |
+| 21 | *`Welcome - Stylesheet`* | **welcome-styles.css** | [](./assets/stylesheets/welcome) |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
 | 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
 | 25 | *`Page - Class`* | **Page.js** | Pending |
 | 26 | *`View - Class`* | **View.js** | Pending |
 | 27 | *`Starter - Helper`* | **starter.js** | ~~Pending~~ |
-| 28 | *`Router - Helper`* | **router.js** | _*In progress*_ |
+| 28 | *`Router - Helper`* | **router.js** | [Done](./src/helpers/router.js)\* |
 | 29 | *`Default Home - View`* | **default-home-view.js** | Pending |
 | 30 | *`Default Login - View`* | **default-login-view.js** | Pending |
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
@@ -207,6 +207,10 @@ These are some of the things we did or plan to do, in addition to this project's
 | 34 | *`Service - Mixin`* | **service-mixin.js** | [Done](./src/helpers/mixins/service-mixin.js)\* |
 | 35 | *`Event - Mixin`* | **event-mixin.js** | [Done](./src/helpers/mixins/event-mixin.js)\* |
 | 36 | *`LiveStorage - Helper`* | **LiveStorage.js** | [Done](./src/helpers/LiveStorage.js)\* |
+| 37 | *`Slide Left - Animation`* | **slide-left-animation.css** | _*In progress*_ |
+| 38 | *`Slide From Left - Animation`* | **slide-from-left-animation.css** | Pending |
+| 39 | *`Slide Right - Animation`* | **slide-right-animation.css** | Pending |
+| 40 | *`Slide From Right - Animation`* | **slide-from-right-animation.css** | Pending |
 
 
 > NOTE: (\*) = still needs to be updated. <br>
