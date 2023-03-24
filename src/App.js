@@ -108,9 +108,17 @@ export const SECONDARY_PAGE_TYPE = 69;
 
 
 // themes
-// export const CLASSIC_THEME = 'classic';
-// export const LIGHT_THEME = 'light';
-// export const DARK_THEME = 'dark';
+export const CLASSIC_THEME = 'classic';
+export const LIGHT_THEME = 'light';
+export const DARK_THEME = 'dark';
+
+// toast types
+export const DEFAULT_TOAST_TYPE = 'default';
+export const SUCCESS_TOAST_TYPE = 'success';
+export const FAILED_TOAST_TYPE = 'failed';
+// default toast timeout
+export const DEFAULT_TOAST_TIMEOUT = 500;
+export const TOAST_OUT_DURATION = 100;
 
 
 
@@ -120,9 +128,9 @@ export const SECONDARY_PAGE_TYPE = 69;
 // Create a `App` class
 export class App extends Engine {
   // some app specific constants
-  static get CLASSIC_THEME() { return 'classic' }
-  static get LIGHT_THEME() { return 'light' }
-  static get DARK_THEME() { return 'dark' }
+  // static get CLASSIC_THEME() { return 'classic' }
+  // static get LIGHT_THEME() { return 'light' }
+  // static get DARK_THEME() { return 'dark' }
 
   /**
    * Properties
@@ -232,7 +240,10 @@ export class App extends Engine {
   // Define some public properties
    
   // Define some private properties  
-   
+  
+  #toasting = false;
+
+
 
   /**
    * Constructor of the App
@@ -349,6 +360,11 @@ export class App extends Engine {
     installStorageWatcher(this, ['lang', 'theme'], (changedStorageItems) => this._handleChangedStorageItems(changedStorageItems));
 
   
+    // if the current values of `lang` and `theme` in our live storage
+    if (this.liveStorage.isNullItems('lang', 'theme')) {
+      this.liveStorage.setItems({lang: this.lang, theme: this.theme});
+    }
+
     // add event listeners here 
 
     // this.host.addEventListener('click', (ev) => console.log(`clicking host ev.currentTarget =>`, ev.currentTarget));
@@ -370,9 +386,6 @@ export class App extends Engine {
   propertiesUpdated(changedProperties) {
     changedProperties.forEach((prop) => {
 
-      if (['lang', 'theme'].includes(prop.name)) {
-        this.liveStorage.setItem(prop.name, prop.value);
-      }
 
       if (prop.name === 'updated' && prop.value === true) {
         // call the first updated method
@@ -459,6 +472,39 @@ export class App extends Engine {
     
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[40m\x1b[31m[onReady]: ${this.name} is ready`); 
+  }
+
+
+  /**
+   * Handler that is called whene the `theme` has been updated
+   *
+   * @param { String } updatedTheme
+   */
+  onThemeUpdated(updatedTheme) {
+    // if we are currently on the welcome screen...
+    if (this.currentScreen === WELCOME_SCREEN) {
+      // ...update the `theme` property of welcome screen 
+      this.welcomeScreen.theme = updatedTheme;
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[45m\x1b[30m[onThemeUpdated]: updatedTheme => ${updatedTheme}\x1b[0m`);
+  }
+
+  /**
+   * Handler that is called whene the `lang` has been updated
+   *
+   * @param { String } updatedLang
+   */
+  onLangUpdated(updatedLang) {
+    // if we are currently on the welcome screen...
+    if (this.currentScreen === WELCOME_SCREEN) {
+      // ...update the `lang` property of welcome screen 
+      this.welcomeScreen.lang = updatedLang;
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[45m\x1b[2m[onLangUpdated]: updatedLang => ${updatedLang}\x1b[0m`);
   }
 
 
@@ -588,15 +634,130 @@ export class App extends Engine {
    */
   updateTheme(newTheme) {
     // do nothing if there's no theme
-    // TODO: Make sure the given `theme` is supported before proceeding
-    if (typeof theme === 'undefined') { return }
+    // TODO: Make sure the given `newTheme` is supported before proceeding
+    if (typeof newTheme === 'undefined') { return }
+
+    // set the app's theme to the `newTheme`
+    this.theme = newTheme;
+
+    // update the theme
+    this.liveStorage.setItem('theme', newTheme, true);
 
     // remove all themes in `containerEl`
-    this.containerEl.classList.remove(App.CLASSIC_THEME, App.LIGHT_THEME, App.DARK_THEME);
+    this.containerEl.classList.remove(CLASSIC_THEME, LIGHT_THEME, DARK_THEME);
     // update the theme
-    this.containerEl.classList.add(theme);
+    this.containerEl.classList.add(newTheme);
+
+
+    // show toast
+    this.showToast({
+      message: `Theme updated to ${newTheme}`,
+      type: SUCCESS_TOAST_TYPE,
+      timeout: DEFAULT_TOAST_TIMEOUT 
+    });
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[2m[updateTheme]: newTheme => ${newTheme}\x1b[0m`);
+
   }
-  
+
+
+  /**
+   * Method used to update the app's language with the given `newLang`
+   *
+   * Example usage:
+   *   updateLang('fr'); // <- to change the app's language to French
+   *
+   * @param { String } newLang - """c'mon, this is also pretty self-explanatory, isn't it? ;)"""
+   */
+  updateLang(newLang) {
+    // do nothing if there's no new language id (i.e. newLang)
+    // TODO: Make sure the given `newLang` is supported before proceeding
+    if (typeof newLang === 'undefined') { return }
+    
+    // set the app's lang to the `newLang`
+    this.lang = newLang ?? this.lang;
+
+    // update the lang in our live storage
+    this.liveStorage.setItem('lang', newLang, true);
+
+    // update the root's document element
+    this.root.documentElement.lang = newLang;
+
+    // update the `lang` attribute in `containerEl`
+    this.containerEl.lang = newLang;
+
+    // show toast
+    this.showToast({
+      message: `Language updated to ${newLang}`,
+      type: SUCCESS_TOAST_TYPE,
+      timeout: DEFAULT_TOAST_TIMEOUT 
+    });
+  }
+
+
+  /**
+   * Method used to display a toast with the given `params`
+   * NOTE: The `params` must have at least a `message
+   * TODO: Rename `params` to `bread` for fun #lol ;)
+   *
+   * @param { Object } params - supported keys are `message`, `type` and `timeout`
+   * @param { Boolean } force - if TRUE, the new toast will override any active toast.
+   */
+  showToast(params, force = false) {
+    // do nothing if the app is toasting and `force` is FALSE ;)
+    if (this.#toasting && !force) { return }
+
+    // Clearing / reseting up our toast...
+    this._clearToast();
+
+    // set toasting to TRUE
+    this.#toasting = true;
+
+
+    // get the toast `message` from `params`
+    let message = params.message; 
+    // get the toast `type` from `params`
+    let type = (typeof params.timeout !== 'undefined') ? params.type : DEFAULT_TOAST_TYPE; 
+    // get the toast `timeout` from `params`,
+    // and add toast out duration (for helping the fade-out process)
+    let timeout = TOAST_OUT_DURATION + ((typeof params.timeout !== 'undefined') ? params.timeout : DEFAULT_TOAST_TIMEOUT);
+
+    // get a toast html template with these params as `toastHtmlTemplate`
+    let toastHtmlTemplate = this._getToastHtmlTemplate(type, message);
+
+    // insert `toastHtmlTemplate` to `toastsEl`
+    this.toastsEl.insertAdjacentHTML('beforeend', toastHtmlTemplate);
+
+    // get the added toast element as `toastEl`
+    let toastEl = this.toastsEl.querySelector('.toast');
+
+    // unhide the `toastEl`
+    this.toastsEl.hidden = false;
+
+
+    // set / create a new `_toastTimer`
+    this._toastTimer = setTimeout(() => {
+      // remove the 'fade-in' class from `toastEl`
+      toastEl.classList.remove('fade-in');
+
+      // And after the toast out duration
+      // HACK: I run outta time so had to write this ugly code below :(
+      this._toastOutTimer = setTimeout(() => {
+        // remove the toast element
+        toastEl.remove();
+        // hide the `toastsEl`
+        this.toastsEl.hidden = true;
+
+      }, TOAST_OUT_DURATION);
+
+      // remove the 'fade-
+    }, timeout - TOAST_OUT_DURATION);
+
+  }
+
+
+
   /* >> Public Setters << */
   
   /**
@@ -606,6 +767,8 @@ export class App extends Engine {
    */
   set currentScreen(screen) {
     this._currentScreen = screen;
+    // update the live storage accordingly
+    this.liveStorage?.setItem('screen', screen);
   }
 
   /**
@@ -615,6 +778,8 @@ export class App extends Engine {
    */
   set currentPage(page) {
     this._currentPage = page;
+    // update the live storage accordingly
+    this.liveStorage?.setItem('page', page);
   }
 
 
@@ -747,7 +912,54 @@ export class App extends Engine {
   }
 
 
+  /**
+   * Returns the `<div id="toasts">` element from the app's shadow root
+   *
+   * @returns { Element }
+   */
+  get toastsEl() {
+    return this.shadowRoot.getElementById('toasts');
+  }
+
+
   /* >> Private Methods << */
+  
+  /**
+   * Clears our toast.
+   * This method will remove any `<div class="toast">` element from `toastsEl`
+   */
+  _clearToast() {
+    // clear any active `toastTimer` and `toastOutTimer`
+    clearTimeout(this._toastTimer);
+    clearTimeout(this._toastOutTimer);
+
+    // empty `toastsEl`
+    this.toastsEl.innerHTML = '';
+
+    // hide `toastsEl`
+    this.toastsEl.hidden = true;
+  }
+
+  /**
+   * Returns the html template of a toast based on the specified `type` and `message`
+   *
+   * @param { String } type
+   * @param { String } message
+   *
+   * @returns { HTMLTemplate }
+   */
+  _getToastHtmlTemplate(type, message) {
+    return html`
+      <!-- Toast -->
+      <div class="toast fade-in flex-layout horizontal centered">
+        <!-- Emoji -->
+        <span class="emoji ${type}" ${(!type.length) ? 'hidden' : ''}></span>
+        <!-- Message -->
+        <span class="msg">${message}</span>
+      </div>
+      <!-- End of Toast -->
+    `;
+  }
 
   /**
    * Handler that is called whenever the browser's URL or location changes
@@ -824,8 +1036,41 @@ export class App extends Engine {
    * @param { Array[Object] } changedStorageItems
    */
   _handleChangedStorageItems(changedStorageItems) {
+
     // DEBUG [4dbsmaster]: tell me about these changed storage items ;)
-    console.log(`\x1b[33m[_handleChangedStorageItems]: changedStorageItems => \x1b[0m`, changedStorageItems);
+    console.log(`\x1b[33m[_handleChangedStorageItems](1): this.theme => ${this.theme} & this.lang => ${this.lang}\x1b[0m`);
+
+    // loop through the changed storage items
+    changedStorageItems.forEach((storageItem) => {
+
+      if (storageItem.key === 'theme') {
+        // get the new theme from the storage as `newTheme`
+        let newTheme = storageItem.value;
+
+        // update the app's theme
+        this.updateTheme(newTheme);
+
+        // call the `onThemeUpdated()` method
+        this.onThemeUpdated(newTheme);
+      }
+
+
+      if (storageItem.key === 'lang') {
+        // get the new lang from the storage as `newLang`
+        let newLang = storageItem.value;
+        
+        // update the app's lang
+        this.updateLang(newLang);
+
+        // call the `onLangUpdated()` method
+        this.onLangUpdated(newLang);
+      }
+
+    });
+
+
+    // DEBUG [4dbsmaster]: tell me about these changed storage items ;)
+    console.log(`\x1b[33m[_handleChangedStorageItems](2): changedStorageItems => \x1b[0m`, changedStorageItems);
   }
 
 
@@ -990,6 +1235,24 @@ export class App extends Engine {
     this.welcomeScreen.on('start', () => { 
       /* TODO: load again & show the home page */
       
+    });
+
+    // listen to the `theme-select` event
+    this.welcomeScreen.on('theme-select', (selectedTheme) => {
+      // update the app's theme
+      this.updateTheme(selectedTheme);
+
+      // call the `onThemeUpdated()` method
+      this.onThemeUpdated(selectedTheme);
+    });
+
+    // listen to the `lang-select` event
+    this.welcomeScreen.on('lang-select', (selectedLang) => {
+      // update the app's lang
+      this.updateLang(selectedLang);
+
+      // call the `onLangUpdated()` method
+      this.onLangUpdated(selectedLang);
     });
 
   }
