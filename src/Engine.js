@@ -100,9 +100,27 @@ const DEFAULT_RUN_TIMEOUT = 60000; // <- 60 seconds = 1 minute
  */
 export const html = (strings, ...values) => {
 
+  // Treating/parsing the values...
+
+  values = values.map((value) => {
+    // Initialize a `result` variable
+    let result = value;
+
+    // If the value is an array...
+    if (Array.isArray(value)) {
+      // ...HACK: remove any trailing comma 
+      // by join their items with a space
+      result = value.join(' ');
+    }
+
+    // return `result`
+    return result;
+  });
+
   // TEST: Log all the values
   // DEBUG [4dbsmaster]: tell me about all the values
-  values.forEach((value, index) => console.log(`\x1b[42m\x1b[30m[html]: value at ${index} => ${value}`));
+  values.forEach((value, index) => console.log(`\x1b[42m\x1b[30m[html]: value at ${index} => \x1b[0m`, value));
+
 
   // return the raw strings including their values
   return String.raw({ raw: strings }, ...values);
@@ -688,9 +706,6 @@ export class Engine {
   /* >> Private Setters << */
 
   /* >> Private Getters << */
-
-
-
 
 }; // <- End of `Engine` class
 
