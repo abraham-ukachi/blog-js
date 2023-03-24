@@ -91,6 +91,8 @@
   <link rel="apple-touch-icon" sizes="144x144" href="assets/images/manifest/icon-144x144.png">
   <link rel="apple-touch-icon" sizes="192x192" href="assets/images/manifest/icon-192x192.png">
 
+  <!-- HACK: (hard-codded typography) Fonts and Material Icons not dynamically imported in App -->
+  <link rel="stylesheet" href="assets/theme/typography.css">
 
   <!-- Top-level styles -->
   <style>
