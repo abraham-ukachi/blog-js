@@ -36,8 +36,9 @@
 */
 
 import { html, Engine } from './Engine.js'; // <- we just need stuff from our custom engine to get started #LOL !!! :)
-// import { eventMixin } from './helpers/mixins/event-mixin.js';
+import { eventMixin } from './helpers/mixins/event-mixin.js';
 import { installStorageWatcher } from './helpers/LiveStorage.js';
+import { installRouter } from './helpers/router.js';
 
 
 "use strict"; 
@@ -101,6 +102,10 @@ export const APP_DIALOGS = 3;
 export const APP_MENUS = 4;
 export const APP_TOASTS = 5;
 
+// home page types
+export const PRIMARY_PAGE_TYPE = 420;
+export const SECONDARY_PAGE_TYPE = 69;
+
 
 // themes
 // export const CLASSIC_THEME = 'classic';
@@ -132,7 +137,6 @@ export class App extends Engine {
       lang: { type: String },
       theme: { type: String },
       updated: { type: Boolean }
-
     };
   }
 
@@ -196,7 +200,35 @@ export class App extends Engine {
     ];
   }
 
-  
+
+  /**
+   * Supported Themes
+   *
+   * @type { Array[Object] }
+   */
+  static get supportedThemes() {
+    return [
+      { id: 'classic', name: 'Classic' },
+      { id: 'light', name: 'Light' },
+      { id: 'dark', name: 'Dark' }
+    ];
+  }
+
+  /**
+   * Supported Languages
+   *
+   * @type { Array[Object] }
+   */
+  static get supportedLanguages() {
+    return [
+      { id: 'en', name: 'English' },
+      { id: 'fr', name: 'French' },
+      { id: 'ru', name: 'Russian' },
+      { id: 'es', name: 'Spanish' }
+    ];
+  }
+
+
   // Define some public properties
    
   // Define some private properties  
@@ -216,6 +248,11 @@ export class App extends Engine {
     // set default attributes
     this.lang = lang;
     this.theme = theme;
+
+    // set both current screen and page to null
+    // (WE ARE IN BOOTING... So, no screens; no pages)
+    this.currentScreen = null;
+    this.currentPage = null;
 
     // show / log a welcome message
     this.#showWelcomeMessage();
@@ -240,7 +277,6 @@ export class App extends Engine {
     this.updated = false;
     
     // Initialize private properties
-
 
     // ====== TESTING PROPERTIES ==========
     
@@ -273,23 +309,23 @@ export class App extends Engine {
       <div id="appContainer" class="theme ${this.theme}" lang="${this.lang}" fit>
 
         <!-- Screens -->
-        <div id="screens" fit></div>
+        <div id="screens" fit hidden></div>
         <!-- End of Screens -->
 
         <!-- Pages -->
-        <div id="pages" fit></div>
+        <div id="pages" fit hidden></div>
         <!-- End of Pages -->
 
         <!-- Dialogs -->
-        <div id="dialogs" fit></div>
+        <div id="dialogs" fit hidden></div>
         <!-- End of Dialogs -->
 
         <!-- Menus -->
-        <div id="menus" fit></div>
+        <div id="menus" fit hidden></div>
         <!-- End of Menus -->
 
         <!-- Toasts -->
-        <div id="toasts" fit></div>
+        <div id="toasts" fit hidden></div>
         <!-- End of Toasts -->
 
       </div>
@@ -306,8 +342,12 @@ export class App extends Engine {
    */
   firstUpdated() {
 
+    // install a router
+    installRouter(this, (location, event) => this._handleNavigation(location, event));
+
     // install a storage watcher from 'LiveStorage'
     installStorageWatcher(this, ['lang', 'theme'], (changedStorageItems) => this._handleChangedStorageItems(changedStorageItems));
+
   
     // add event listeners here 
 
@@ -417,8 +457,6 @@ export class App extends Engine {
     // Load the splash screen
     this._loadScreens([SPLASH_SCREEN]).then((loadedScreens) => this._onScreensLoaded(loadedScreens));
     
-    
-    
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[40m\x1b[31m[onReady]: ${this.name} is ready`); 
   }
@@ -447,7 +485,36 @@ export class App extends Engine {
     }
 
   }
-  
+
+  /**
+   * Returns a list of themes currently supported by this App.
+   *
+   * @param { Boolean } idsOnly
+   *
+   * @returns { Array[Object] }
+   */
+  getSupportedThemes(idsOnly = false) {
+    // get the list of supported themes from the constructor as `supportedThemes`
+    let supportedThemes = this.constructor.supportedThemes;
+    // return the `supportedThemes` based on the specified `idsOnly` boolean variable
+    return (idsOnly) ? supportedThemes.map((language) => language.id) : supportedThemes;
+  }
+
+
+  /**
+   * Returns a list of languages currently supported by this App.
+   *
+   * @param { Boolean } idsOnly
+   *
+   * @returns { Array[Object] }
+   */
+  getSupportedLanguages(idsOnly = false) {
+    // get the list of supported languages from the constructor as `supportedLanguages`
+    let supportedLanguages = this.constructor.supportedLanguages;
+    // return the `supportedLanguages` based on the specified `idsOnly` boolean variable
+    return (idsOnly) ? supportedLanguages.map((language) => language.id) : supportedLanguages;
+  }
+
   /**
    * Returns the app's title
    *  
@@ -531,8 +598,47 @@ export class App extends Engine {
   }
   
   /* >> Public Setters << */
+  
+  /**
+   * Updates the current screen of the app with the given `screen`
+   *
+   * @param { String } screen - name of the page
+   */
+  set currentScreen(screen) {
+    this._currentScreen = screen;
+  }
+
+  /**
+   * Updates the current page of the app with the given `page`
+   *
+   * @param { String } page - name of the page
+   */
+  set currentPage(page) {
+    this._currentPage = page;
+  }
+
+
+
+
 
   /* >> Public Getters << */
+
+  /**
+   * Returns the current screen of the app
+   * @param { String }
+   */
+  get currentScreen() {
+    return this._currentScreen;
+  }
+
+  /**
+   * Returns the current page of the app 
+   * @param { String } 
+   */
+  get currentPage() {
+    return this._currentPage;
+  }
+
 
   /**
    * Returns the app's `<div id="container">` element in the shadow root
@@ -644,6 +750,75 @@ export class App extends Engine {
   /* >> Private Methods << */
 
   /**
+   * Handler that is called whenever the browser's URL or location changes
+   *
+   * @param { String } location
+   * @param { Event } event
+   */
+  _handleNavigation(location, event) {
+
+    // create a url with the `location`
+    let url = new URL(location);
+
+    // Replace the base in the location with a `/`
+    //location = location.replace(BASE_DIR, '/');
+
+    // get the origin
+    let origin = url.origin + BASE_DIR;
+
+    // get the page from the `url`
+    let page = url.pathname.replace(BASE_DIR, '/').split('/')[1];
+
+    // get the view from the `url`
+    let view = url.pathname.split('/').pop();
+
+    // get the search parameters as `params`
+    let params = new URLSearchParams(url.search);
+
+    // check for screens
+    let isScreens = (!page.length && !view.length) ? true : false; 
+
+    
+    // if we are most likely on a splash or welcome screen...
+    if (isScreens && [SPLASH_SCREEN, WELCOME_SCREEN].indexOf(this.currentScreen) !== -1) {
+      // ...navigate the screens using the params
+      this._navigateScreens(params);
+    }
+
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[35m[_handleNavigation](1): location => ${location} & event => \x1b[0m`, event);
+    console.log(`\x1b[35m[_handleNavigation](2): page => ${page} & view => ${view} & params => \x1b[0m`, params.toString());
+
+  }
+
+  /**
+   * Method used to navigate through screens,
+   * using the specified `params`
+   *
+   * @param { Object } params
+   */
+  _navigateScreens(params) {
+    // NOTE: Using switch for scalability reasons ;)
+    switch (this.currentScreen) {
+      case SPLASH_SCREEN:
+        break;
+      case WELCOME_SCREEN:
+        // get the change setting param as `changeSetting`
+        let changeSetting = params.get('change');
+        // update the welcomeScreen `changeSetting` property
+        this.welcomeScreen.changeSetting = (changeSetting?.length) ? changeSetting : '';
+        // open the setting container if there's a change setting 
+        this.welcomeScreen.settingsOpened = (changeSetting?.length) ? true : false;
+        break;
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[42m\x1b[30m[_navigateScreens]: params => \x1b[0m`, params);
+
+  }
+
+  /**
    * Handler that is called whenever an item changes in `liveStorage`
    * 
    * @param { Array[Object] } changedStorageItems
@@ -689,7 +864,7 @@ export class App extends Engine {
       
       // DEBUG [4dbsmaster]: tell me about it ;)
       console.warn(`\x1b[34m[#create]: browser doesn't support HTML template\x1b[0m`);
-    }
+    } 
       
 
   }
@@ -714,12 +889,54 @@ export class App extends Engine {
   }
 
 
+
+
+  /**
+   * Handler that is called when on or more pages have been loaded
+   *
+   * @param { Array[Object] } loadedPages
+   */
+  _onPagesLoaded(loadedPages) {
+    // loop through the pages
+    loadedPages.forEach((page) => {
+      // If the Home Page has been loaded...
+      if (page.name === HOME_PAGE) {
+        // ...handle the home page load
+        this._homePageLoadHandler(page.object);
+      }
+    });
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[34m[_onPagesLoaded]: page.name => ${page.name} & page.object => \x1b[0m`, page.object);
+  }
+
+  /**
+   * Handler that is called when the home page loads
+   *
+   * @param { Class } HomePage
+   */
+  _homePageLoadHandler(HomePage) {
+    // If there's no `homePage` object in this `App`...
+    if (!this.homePage) {
+      // ...create an object of `HomePage` class as `homePage`
+      this.homePage = new HomePage(PRIMARY_PAGE_TYPE);
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[34m[_homePageLoadHandler](1): this.pagesEl => `, this.pagesEl);
+    console.log(`\x1b[34m[_homePageLoadHandler](2): HomePage => `, HomePage);
+  }
+
+
   /**
    * Handler that is called when one or more screens have been loaded
    *
    * @param { Array[Object] } loadedScreen
    */
   _onScreensLoaded(loadedScreens) {
+    // unhide the `screens` element
+    this.screensEl.hidden = false;
+
     loadedScreens.forEach((screen) => {
 
       // If the Splash Screen has been loaded...
@@ -729,9 +946,52 @@ export class App extends Engine {
 
       }
 
+      // If the Welcome Screen has been loaded...
+      if (screen.name === WELCOME_SCREEN) {
+        // ...handle the welcome screen load
+        this._welcomeScreenLoadHandler(screen.object);
+      }
+
       // DEBUG [4dbsmaster]: tell me about it ;)
       console.log(`\x1b[33m[_onScreensLoaded](1): screen.name => ${screen.name} & screen.object => \x1b[0m`, screen.object);
     });
+  }
+
+  /**
+   * Handler that is called whenever the welcome screen loads
+   *
+   * @param { Class } WelcomeScreen
+   */
+  _welcomeScreenLoadHandler(WelcomeScreen) {
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[34m[_welcomeScreenLoadHandler](1): this.screensEl => `, this.screensEl);
+    console.log(`\x1b[34m[_welcomeScreenLoadHandler](2): WelcomeScreen => `, WelcomeScreen);
+
+    // get the root of all screen as `screensRoot`
+    const screensRoot = this.getRootOf('screens');
+
+    // assign the welcome screen object to a app's `welcomeScreen` variable
+    this.welcomeScreen = new WelcomeScreen('welcome-screen');
+
+    // set the animation duration to 500
+    this.welcomeScreen.setSlideDuration(500);
+
+    // listen to the `last-step` event
+    this.welcomeScreen.on('last-step', () => { 
+      /* TODO: start loading the home page */
+      // If there's no `homePage` in `App`
+      if (!this.homePage) {
+        // ...load the home page
+        this._loadPages([HOME_PAGE]).then((loadedPages) => this._onPagesLoaded(loadedPages));
+      }
+    });
+
+    // listen to the `start` event
+    this.welcomeScreen.on('start', () => { 
+      /* TODO: load again & show the home page */
+      
+    });
+
   }
 
   /**
@@ -750,12 +1010,54 @@ export class App extends Engine {
     // assign the splash screen object to a app's `splashScreen` variable
     this.splashScreen = new SplashScreen('splash-screen');
 
+    // listen to the `almost-complete` event
+    this.splashScreen.on('almost-complete', (target) => { 
+      // stop/pause the progress 
+      target.stopProgress();
+
+      // load the welcome screen 
+      this._loadScreens([WELCOME_SCREEN]).then((loadedScreens) => {
+        this._onScreensLoaded(loadedScreens);
+
+        // continue the progress
+        target.startProgress();
+
+        // complete the progress
+        // this.splashScreen.completeProgress();
+        
+      }); 
+       
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.log(`\x1b[44m[_splashScreenLoadHandler](almost-complete|event)\x1b[0m`);
+    });
+
+
+    // listen to the 'progress-complete' event
+    this.splashScreen.on('progress-complete', (target) => {
+      // TODO: Check the last time the welcome screen was shown and navigate to it accordingly
+
+      // hide the splash screen
+      target.hide();
+
+      // show the welcome screen
+      this.welcomeScreen.show();
+
+      // set the current screen to welcome screen
+      this.currentScreen = WELCOME_SCREEN;
+
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.log(`\x1b[44m[_splashScreenLoadHandler](progress-complete|event) target => \x1b[0m`, target);
+    });
+
     // remove the app's spinner 
     this._removeSpinner();
 
     // TODO: show the splash screen
     this.splashScreen.show();
     //this.splashScreen.run();
+    
+    // set the current screen to splash screen obv. ;)
+    this.currentScreen = SPLASH_SCREEN;
     
     
     // install a storage watcher from 'LiveStorage'
@@ -774,6 +1076,7 @@ export class App extends Engine {
     // remove the spinner element
     this._spinnerEl.remove();
   }
+
 
 
   /* >> Private Setters << */
@@ -798,7 +1101,7 @@ export class App extends Engine {
 
 
 // Attach some mixins to `App`...
-// Object.assign(App.prototype, EventMixin);
+Object.assign(App.prototype, eventMixin);
 
 // Attach some behaviors to `App`...
 // Object.assign(App.prototype, AppBehavior);
