@@ -262,7 +262,119 @@ footer button {
   display: none;
 }
 
+/* App Bar in Settings Container */
+#settingsContainer .app-bar {
+  padding: 0 0.75rem;
+}
 
+#settingsContainer .title-wrapper {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Menus in Settings Container */
+#settingsContainer menu {
+  list-style: none;
+  margin: 1rem 1.5rem;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 2.5rem;
+}
+
+
+#settingscontainer menu > *:nth-child(1) > .label {
+  --settings-animation-delay: 0.2s;
+}
+
+#settingsContainer menu > *:nth-child(2) > .label {
+  --settings-animation-delay: 0.3s;
+}
+
+#settingsContainer menu > *:nth-child(3) > .label {
+  --settings-animation-delay: 0.4s;
+}
+
+#settingsContainer menu > *:nth-child(4) > .label {
+  --settings-animation-delay: 0.5s;
+}
+
+#settingsContainer menu > *:nth-child(5) > .label {
+  --settings-animation-delay: 0.6s;
+}
+
+
+
+
+
+
+#settingsContainer menu li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  opacity: var(--opacity-text-inactive);
+  
+
+}
+
+#settingsContainer menu li .label {
+  opacity: 0;
+
+  -webkit-animation: fadeIn ease 0.5s var(--settings-animation-delay, 0.2s) forwards;
+  -moz-animation: fadeIn ease 0.5s var(--settings-animation-delay, 0.2s) forwards;
+  animation: fadeIn ease 0.5s var(--settings-animation-delay, 0.2s) forwards;
+}
+
+
+#settingsContainer menu li:focus-visible {
+  outline: none;
+  color: var(--tertiary-color);
+  opacity: var(--opacity-text-active);
+}
+
+#settingsContainer menu li .label {
+  flex: 1;
+}
+
+/* hide the check/done icon in settings menu list item*/
+#settingsContainer menu li .icon {
+  visibility: hidden;
+}
+
+
+
+#settingsContainer menu li[selected] {
+  color: var(--primary-color);
+}
+
+/* When settings menu list item is seletected, show the check/done icon*/
+#settingsContainer menu li[selected] > .icon {
+  visibility: visible;
+  opacity: 0;
+
+  -webkit-animation: fadeIn ease 0.5s 0.5s forwards;
+  -moz-animation: fadeIn ease 0.5s 0.5s forwards;
+  animation: fadeIn ease 0.5s 0.5s forwards;
+}
+
+#settingsContainer menu li:hover, 
+#settingsContainer menu li[selected] {
+  font-weight: bold;
+  opacity: var(--opacity-text-active);
+}
+
+/* Details Container */
+#appLayout > aside {
+  display: none;
+}
+
+/* Active languages & themes Icon Button */
+#languageIconButton[active], #themeIconButton[active] {
+  color: var(--on-background-color);
+}
 
 /* 
  * --> Wide - Layout <--
@@ -310,11 +422,10 @@ footer button {
     max-width: 0;
   }
 
-  #settingsContainer[opened] ~ aside {
-    width: 40%;
-  }
 
 }
+
+
 
 
 
@@ -328,6 +439,12 @@ footer button {
   /* App Logo */
   #appLogo {}
 
+
+  /* Settings Container */
+  #settingsContainer {
+    width: 40%;
+  }
+
 }
 
 
@@ -340,6 +457,27 @@ footer button {
 
   /* App Logo */
   #appLogo {}
+
+  /* Settings Container */
+  #settingsContainer {
+    width: 20%;
+  }
+
+  #settingsContainer[opened] ~ aside {
+    width: 40%;
+  }
+
+  #settingsContainer[opened] ~ main {
+    flex: 0.86;
+  }
+
+
+  /* Details Container */
+  #appLayout > aside {
+    display: flex;
+  }
+
+
 
 
 }
