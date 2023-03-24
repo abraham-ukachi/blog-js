@@ -34,7 +34,7 @@
 *    -|> const controller = SplashScreen;
 *    -|> 
 *    -|> // instantiate the `SplashScreen`
-*    -|> let splashScreen = new SplashScreen(controller, root, 'splash-screen');
+*    -|> let splashScreen = new SplashScreen('splash-screen');
 *    -|> 
 *    -|> // show the splash screen
 *    -|> splashScreen.show();
@@ -146,7 +146,7 @@ export class SplashScreen extends Screen {
     return html`
       <!-- Splash Screen Container -->
       <div id="splashScreenContainer" class="flex-layout vertical centered" fit>
-        <p class="txt upper">hello from <strong>${this.name}</strong></p>
+        <!-- <p class="txt upper">hellooo from <a href="./login"><strong>${this.name}</strong></a></p> -->
 
         <!-- App Logo -->
         <svg id="appLogo" class="pop-in" xmlns="https://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ export class SplashScreen extends Screen {
    */
   onHide() {
     // DEBUG [4dbsmaster]: tell me about it ;)
-    console.info(`\x1b[37m[onShow]: ${this.name} is hidden`); 
+    console.info(`\x1b[37m[onHide]: ${this.name} is hidden`); 
   }
 
   /**
@@ -374,11 +374,14 @@ export class SplashScreen extends Screen {
         }
         break;
       case 75: // <- Do something at 75%
-        // this.completeProgress();
+        // trigger and `almost-complete`  event.
+        this.trigger('almost-complete', this);
         break;
       case 100: // <- AT 100%...
         // stop the progress
         this.stopProgress();
+        // trigger the 'progress-complete` event.
+        this.trigger('progress-complete', this);
 
         // TODO: trigger a 'splash-progress-complete' event
         // blogJSApp.trigger('splash-progress-complete');
