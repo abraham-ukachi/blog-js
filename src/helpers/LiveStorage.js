@@ -293,6 +293,36 @@ export class LiveStorage {
   }
 
 
+  /**
+   * Returns the current snapshot of the live storage
+   *
+   * @returns { Object }
+   */
+  getCurrentSnapshot() {
+    return this.#snapshot;
+  }
+
+  /**
+   * Checks if all values of the given `keys` are null
+   *
+   * @param { Array } keys
+   *
+   * @returns { Boolean } if TRUE, all the values are null
+   */
+  isNullItems(...keys) {
+    // get all the items
+    let items = this.getItems(...keys);
+    // map only the values in `items`
+    let mappedValues = Object.entries(items).map(([key, value]) => value);
+
+    // checking if all values are null, and asign to `result` variable
+    let result = mappedValues.every((value) => value === null);
+
+    // return `result`
+    return result;
+  }
+
+
 
 
   /* >> public getters << */
