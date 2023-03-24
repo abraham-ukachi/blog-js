@@ -90,7 +90,7 @@ export const eventMixin = {
     if (!this._eventHandlers?.[eventName]) { return }
 
     // call the handlers
-    this._eventHandlers.forEach((handler) => handler.apply(this, args));
+    this._eventHandlers[eventName].forEach((handler) => handler.apply(this, args));
   },
 
 
@@ -118,6 +118,11 @@ export const eventMixin = {
 
     // add `handler` to the list 
     this._eventHandlers[eventName].push(handler);
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[45m[on](1): eventName => ${eventName} & handler => \x1b[0m`, handler);
+    console.log(`\x1b[45m[on](2): _eventHandlers => \x1b[0m`, this._eventHandlers);
+
   },
 
 
