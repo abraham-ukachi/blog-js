@@ -39,7 +39,7 @@
 */
 
 import { html, Engine } from './Engine.js'; // <- we just need stuff from our custom engine to get started #LOL !!! :)
-// import { eventMixin } from './helpers/mixins/event-mixin.js';
+import { eventMixin } from './helpers/mixins/event-mixin.js';
 
 "use strict"; 
 // ^^^^^^^^^ This keeps us on our toes, as it forces us to use all pre-defined variables, among other things 😅
@@ -147,7 +147,7 @@ export class Screen extends Engine {
     // Initialize public properties
 
     this.updated = false;
-    this.shown = false;
+    this.shown = null;
 
     // Initialize private properties
   }
@@ -271,6 +271,9 @@ export class Screen extends Engine {
 
   // Hides the screen
   hide() {
+    // HACK: remove the screen's shadow root
+    this.shadowRoot.innerHTML = '';
+
     this.shown = false;
   }
 
@@ -377,6 +380,7 @@ export class Screen extends Engine {
     let hostEl = document.createElement('div');
     hostEl.id = this.screenId;
     hostEl.classList.add('screen');
+    hostEl.setAttribute('fit', '');
     // append this `hostEl` to the root
     this.root.appendChild(hostEl);
     // blogJSApp.screensEl.appendChild(hostEl);
@@ -428,12 +432,15 @@ export class Screen extends Engine {
     if (shown) {
       // run the engine
       //await this.run();
-
+      
       // call the `onShow()` method
       this.onShow();
 
     } else {
       // TODO: stop the engine and hide or remove the screen's host from root
+        
+      // remove the screen's host content
+      this.host.innerHTML = '';
 
       // call the `onHide()` method
       this.onHide();
@@ -452,13 +459,12 @@ export class Screen extends Engine {
 }; // <- End of `Screen` class
 
 
-
 // Attach some mixins to `Screen`...
-// Object.assign(Screen.prototype, EventMixin);
+Object.assign(Screen.prototype, eventMixin);
 
 // Attach some behaviors to `Screen`...
 // Object.assign(Screen.prototype, ScreenBehavior);
-//
+
 
 
 // TODO: Make this a custom element
