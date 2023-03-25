@@ -249,7 +249,59 @@ body, #appContainer {
 /* Menus */
 #menus {
   z-index: 3;
-} 
+}
+
+
+/* === Toasts Styles === */
+
+/* Toasts */
+#toasts {
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  pointer-events: none;
+  padding: 3rem 1rem;
+  box-sizing: border-box;
+
+  --fade-in-animation-duration: 700ms;
+}
+
+
+/* Toast */
+.toast {
+  background-color: var(--on-background-color);
+  color: var(--background-color);
+  padding: 0.5rem 1.25rem;
+  border-radius: 32px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  margin: 0 auto;
+  opacity: var(--opacity-md-active);
+}
+
+
+/* Toast Emojis */
+.toast-emoji {
+  width: 24px;
+  height: 24px;
+  display: block;
+  background-color: transparent;
+  background-image: var(--toast-emoji-image);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  margin-right: 0.25rem;
+}
+
+/* Success - Toast Emoji */
+.toast-emoji.success {
+  --toast-emoji-image: url('../images/gifs/emoji_thumbs_up.gif');
+}
+
+
+/* ==== End of Toasts Styles === */
 
 
 /* MAIN part of App Layout */
@@ -1207,7 +1259,23 @@ em {
     margin-right: 16px;
   }
 
+  /* Toasts */
+  #toasts {
+    padding: 3rem;
+  }
 
+  /* Toast */
+  .toast {
+    padding: 0.5rem 1.5rem;
+    border-radius: 48px;
+    font-size: 1.25rem;
+  }
+
+  /* Toast Emojis */
+  .toast-emoji {
+    width: var(--toast-emoji-size, 32px);
+    height: var(--toast-emoji-size, 32px);
+  }
 
 }
 
@@ -1295,6 +1363,18 @@ em {
   /* Dialog Buttons */
   .dialog-buttons {
     flex-direction: row;
+  }
+
+
+  /* Toasts */
+  #toasts {
+    padding: 5rem;
+  }
+
+  /* Toast Emojis */
+  .toast-emoji {
+    width: var(--toast-emoji-size, 42px);
+    height: var(--toast-emoji-size, 42px);
   }
 
 }
