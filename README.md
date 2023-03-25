@@ -190,12 +190,12 @@ These are some of the things we did or plan to do, in addition to this project's
 | 17 | *`Settings - Page`* | **settings-page.js** | Pending |
 | 18 | *`Welcome - Screen`* | **welcome-screen.js** | [Done](./src/screens/welcome-screen.js)\* |
 | 19 | *`Goodbye - Page`* | **goodbye-page.js** | Pending |
-| 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css) |
+| 20 | *`Slide From Up - Animation`* | **slide-from-up-animation.css** | [Done](./assets/animations/slide-from-up-animation.css)e
 | 21 | *`Welcome - Stylesheet`* | **welcome-screen-styles.css** | [Done](./assets/stylesheets/welcome-screen-styles.css)\* |
 | 22 | *`Home - Stylesheet`* | **home-styles.css** | Pending |
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
 | 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
-| 25 | *`Page - Class`* | **Page.js** | Pending |
+| 25 | *`Page - Class`* | **Page.js** | [Done](./src/Page.js)\* |
 | 26 | *`View - Class`* | **View.js** | Pending |
 | 27 | *`Starter - Helper`* | **starter.js** | ~~Pending~~ |
 | 28 | *`Router - Helper`* | **router.js** | [Done](./src/helpers/router.js)\* |
