@@ -68,7 +68,6 @@
 // defining some constant variables...
 
 
-
 /**
  * `installRouter`
  *
@@ -135,3 +134,100 @@ export const installRouter = (controller, locationUpdatedCallback) => {
 
 }; // <- End of `installRouter`
 
+
+
+
+/**
+ * Utility fuction to get name of the origin route from the given `location`
+ *
+ * @param { String } location
+ * @param { String } baseDir
+ *
+ * @returns { String } originRoute
+ */
+export const getOriginRoute = (location = window.location, baseDir = '/blog-js/') => {
+  // create a url with the `location`
+  let url = new URL(location);
+
+  // get the origin route
+  let originRoute = url.origin + baseDir;
+
+  // return `originRoute`
+  return originRoute;
+};
+
+
+
+/**
+ * Utility fuction to get name of the page route from the given `location`
+ *
+ * @param { String } location
+ * @param { String } baseDir
+ *
+ * @returns { String } pageRoute
+ */
+export const getPageRoute = (location = window.location, baseDir = '/blog-js/') => {
+  // create a url with the `location`
+  let url = new URL(location);
+
+  // get the page from the `url`
+  let page = url.pathname.replace(baseDir, '/').split('/')[1];
+
+  // make sure the page route is a string (empty or not) as `pageRoute`
+  let pageRoute = (page?.length) ? page : '';
+
+  // return `pageRoute`
+  return pageRoute;
+};
+
+
+/**
+ * Utility fuction to get name of the view route from the given `location`
+ *
+ * @param { String } location
+ * @param { String } baseDir
+ *
+ * @returns { String } viewRoute
+ */
+export const getViewRoute = (location, baseDir = '/blog-js/') => {
+  // get the page route
+  let pageRoute = getPageRoute(location, baseDir);
+
+  // create a url with the `location`
+  let url = new URL(location);
+
+  // split the pathname as `splitPathname` with '/' as separator
+  let splitPathname = url.pathname.split('/');
+
+  // get the last name of a splitted pathname as lastName
+  let lastName = splitPathname[splitPathname.length - 1];
+
+  // If there are more than 3 items in `splitPathname`, 
+  // and the `lastName` is not the same as the `page`,
+  // use it as the view route
+  let viewRoute = ((splitPathname.length) > 3 && (lastName !== pageRoute)) ? lastName : '';
+
+  // return `viewRoute`
+  return viewRoute;
+};
+
+
+
+
+/**
+ * Utility fuction to get the search params from the given `location`
+ *
+ * @param { String } location
+ *
+ * @returns { Object } searchParams
+ */
+export const getSearchParams = (location) => {
+  // create a url with the `location`
+  let url = new URL(location);
+
+  // get the search parameters as `searchParams`
+  let searchParams = new URLSearchParams(url.search);
+
+  // return `searchParams`
+  return searchParams;
+};
