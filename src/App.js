@@ -38,7 +38,8 @@
 import { html, Engine } from './Engine.js'; // <- we just need stuff from our custom engine to get started #LOL !!! :)
 import { eventMixin } from './helpers/mixins/event-mixin.js';
 import { installStorageWatcher } from './helpers/LiveStorage.js';
-import { installRouter } from './helpers/router.js';
+import { installRouter, getPageRoute, getViewRoute, getSearchParams } from './helpers/router.js';
+import { installMediaQueryWatcher } from './helpers/mediawatcher.js';
 
 
 "use strict"; 
@@ -83,6 +84,7 @@ export const WELCOME_SCREEN = 'welcome';
 export const HOME_PAGE = 'home';
 export const SEARCH_PAGE = 'search';
 export const ARTICLES_PAGE = 'articles';
+export const SAVES_PAGE = 'saves';
 export const PROFILE_PAGE = 'profile';
 export const ADMIN_PAGE = 'admin';
 export const SETTINGS_PAGE = 'settings';
@@ -102,9 +104,9 @@ export const APP_DIALOGS = 3;
 export const APP_MENUS = 4;
 export const APP_TOASTS = 5;
 
-// home page types
-export const PRIMARY_PAGE_TYPE = 420;
-export const SECONDARY_PAGE_TYPE = 69;
+// page types
+export const MAIN_PAGE_TYPE = 'main';
+export const ASIDE_PAGE_TYPE = 'aside';
 
 
 // themes
@@ -115,10 +117,9 @@ export const DARK_THEME = 'dark';
 // toast types
 export const DEFAULT_TOAST_TYPE = 'default';
 export const SUCCESS_TOAST_TYPE = 'success';
-export const FAILED_TOAST_TYPE = 'failed';
+export const ERROR_TOAST_TYPE = 'error';
 // default toast timeout
-export const DEFAULT_TOAST_TIMEOUT = 500;
-export const TOAST_OUT_DURATION = 100;
+export const DEFAULT_TOAST_TIMEOUT = 5000; // <- 5 seconds
 
 
 
@@ -144,7 +145,9 @@ export class App extends Engine {
       title: { type: String },
       lang: { type: String },
       theme: { type: String },
-      updated: { type: Boolean }
+      updated: { type: Boolean },
+
+      _navbarOrientation: { type: String }
     };
   }
 
@@ -175,8 +178,9 @@ export class App extends Engine {
    */
   static get animations() {
     return [ 
-      // 'fade-in',
-      // 'pop-in'
+      'fade-in',
+      'pop-in'
+      // 'slide-from-down'
     ];
   }
 
@@ -236,12 +240,32 @@ export class App extends Engine {
     ];
   }
 
+  /**
+   * Supported Pages
+   *
+   * @type { Array[Object] }
+   */
+  static get supportedPages() {
+    return [
+      {id: 'home', type: 'main', name: 'Home'},
+      {id: 'articles', type: 'main', name: 'Articles'},
+      {id: 'search', type: 'main', name: 'Search'},
+      {id: 'saves', type: 'main', name: 'Saves'},
+      {id: 'profile', type: 'main', name: 'Profile'},
+      {id: 'settings', type: 'main', name: 'Settings'},
+      {id: 'admin', type: 'main', name: 'Admin'},
+      {id: 'article', type: 'aside', name: 'Article'},
+      {id: 'editor', type: 'aside', name: 'Editor'}
+    ];
+  }
+
 
   // Define some public properties
    
   // Define some private properties  
   
   #toasting = false;
+  #_currentLayout = null;
 
 
 
@@ -264,6 +288,10 @@ export class App extends Engine {
     // (WE ARE IN BOOTING... So, no screens; no pages)
     this.currentScreen = null;
     this.currentPage = null;
+    this.currentView = null;
+
+    // list of primary pages
+    this.primaryPages = [ HOME_PAGE, ARTICLES_PAGE, SEARCH_PAGE, SAVES_PAGE, PROFILE_PAGE ];
 
     // show / log a welcome message
     this.#showWelcomeMessage();
@@ -288,6 +316,7 @@ export class App extends Engine {
     this.updated = false;
     
     // Initialize private properties
+    this._navbarOrientation = 'horizontal';
 
     // ====== TESTING PROPERTIES ==========
     
@@ -324,7 +353,7 @@ export class App extends Engine {
         <!-- End of Screens -->
 
         <!-- Pages -->
-        <div id="pages" fit hidden></div>
+        <div id="pages" class="flex-layout horizontal" fit hidden></div>
         <!-- End of Pages -->
 
         <!-- Dialogs -->
@@ -336,7 +365,7 @@ export class App extends Engine {
         <!-- End of Menus -->
 
         <!-- Toasts -->
-        <div id="toasts" fit hidden></div>
+        <div id="toasts" class="fade-in" fit hidden></div>
         <!-- End of Toasts -->
 
       </div>
@@ -358,6 +387,12 @@ export class App extends Engine {
 
     // install a storage watcher from 'LiveStorage'
     installStorageWatcher(this, ['lang', 'theme'], (changedStorageItems) => this._handleChangedStorageItems(changedStorageItems));
+
+    // install a media-query watcher with a `460px` breakpoint
+    installMediaQueryWatcher(this, 460, 
+      (firstNarrowQuery) => this._handleNarrowLayout(firstNarrowQuery), 
+      (firstWideQuery) => this._handleWideLayout(firstWideQuery)
+    );
 
   
     // if the current values of `lang` and `theme` in our live storage
@@ -562,6 +597,21 @@ export class App extends Engine {
   }
 
   /**
+   * Returns a list of all pages currently supported by this App.
+   *
+   * @param { Boolean } idsOnly
+   *
+   * @returns { Array[Object]|Array[String] }
+   */
+  getSupportedPages(idsOnly = false) {
+    // get the list of supported pages from the constructor as `supportedPages`
+    let supportedPages = this.constructor.supportedPages;
+
+    // return the `supportedPages` based on the specified `idsOnly` boolean variable
+    return (idsOnly) ? supportedPages.map((page) => page.id) : supportedPages;
+  }
+
+  /**
    * Returns the app's title
    *  
    * @param { Boolean } hasAuthor
@@ -631,11 +681,12 @@ export class App extends Engine {
    * Method used to update the theme 
    *
    * @param { String } newTheme - """c'mon, this is pretty self-explanatory, isn't it? ;)"""
+   * @param { Boolean } notify - if TRUE, a toast will be shown to notify the user of this recent theme update 
    */
-  updateTheme(newTheme) {
+  updateTheme(newTheme, notify = false) {
     // do nothing if there's no theme
     // TODO: Make sure the given `newTheme` is supported before proceeding
-    if (typeof newTheme === 'undefined') { return }
+    if (typeof newTheme === 'undefined' || newTheme === null) { return }
 
     // set the app's theme to the `newTheme`
     this.theme = newTheme;
@@ -649,12 +700,16 @@ export class App extends Engine {
     this.containerEl.classList.add(newTheme);
 
 
-    // show toast
-    this.showToast({
-      message: `Theme updated to ${newTheme}`,
-      type: SUCCESS_TOAST_TYPE,
-      timeout: DEFAULT_TOAST_TIMEOUT 
-    });
+    // If notify is TRUE...
+    if (notify) {
+      // ...show toast
+      this.showToast({
+        message: `Theme updated to <b>${newTheme}</b>`,
+        type: SUCCESS_TOAST_TYPE,
+        timeout: DEFAULT_TOAST_TIMEOUT 
+      }, true);
+    }
+
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[2m[updateTheme]: newTheme => ${newTheme}\x1b[0m`);
@@ -669,8 +724,9 @@ export class App extends Engine {
    *   updateLang('fr'); // <- to change the app's language to French
    *
    * @param { String } newLang - """c'mon, this is also pretty self-explanatory, isn't it? ;)"""
+   * @param { Boolean } notify - if TRUE, a toast will be shown to notify the user of this recent lang update 
    */
-  updateLang(newLang) {
+  updateLang(newLang, notify = false) {
     // do nothing if there's no new language id (i.e. newLang)
     // TODO: Make sure the given `newLang` is supported before proceeding
     if (typeof newLang === 'undefined') { return }
@@ -687,12 +743,45 @@ export class App extends Engine {
     // update the `lang` attribute in `containerEl`
     this.containerEl.lang = newLang;
 
-    // show toast
-    this.showToast({
-      message: `Language updated to ${newLang}`,
-      type: SUCCESS_TOAST_TYPE,
-      timeout: DEFAULT_TOAST_TIMEOUT 
+    // If notify is TRUE...
+    if (notify) {
+      // show toast
+      this.showToast({
+        message: `Language updated to <b>${newLang}</b>`,
+        type: SUCCESS_TOAST_TYPE,
+        timeout: DEFAULT_TOAST_TIMEOUT 
+      }, true);
+    }
+
+  }
+
+  /**
+   * Update the app's nav links using the `currentPage` and `currentView`
+   *
+   * @param { String } currentPage
+   * @param { String } currentView
+   */
+  notifyNavLinks(currentPage = this.currentPage, currentView = this.currentView) {
+    // get all the nav links as `navLinks`
+    let navLinks = this.getAllNavLinks();
+
+    // loop through each nav link as `navLinkEl`
+    navLinks.forEach((navLinkEl) => {
+      // If the class list of this `navLinkEl` includes the current page..
+      if (navLinkEl.classList.value.indexOf(currentPage) !== -1) {
+        // ..activate this nav link element
+        navLinkEl.setAttribute('active', '');
+
+      }else {
+        // remove any current `active` property
+        navLinkEl.removeAttribute('active');
+      }
     });
+
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[40m\x1b[32m[notifyNavLinks](1): currentPage => ${currentPage} & currentView => ${currentView}\x1b[0m`);
+    console.log(`\x1b[40m\x1b[32m[notifyNavLinks](2): navLinks => \x1b[0m`, navLinks);
   }
 
 
@@ -719,9 +808,9 @@ export class App extends Engine {
     let message = params.message; 
     // get the toast `type` from `params`
     let type = (typeof params.timeout !== 'undefined') ? params.type : DEFAULT_TOAST_TYPE; 
+
     // get the toast `timeout` from `params`,
-    // and add toast out duration (for helping the fade-out process)
-    let timeout = TOAST_OUT_DURATION + ((typeof params.timeout !== 'undefined') ? params.timeout : DEFAULT_TOAST_TIMEOUT);
+    let timeout = (typeof params.timeout !== 'undefined') ? params.timeout : DEFAULT_TOAST_TIMEOUT;
 
     // get a toast html template with these params as `toastHtmlTemplate`
     let toastHtmlTemplate = this._getToastHtmlTemplate(type, message);
@@ -738,24 +827,88 @@ export class App extends Engine {
 
     // set / create a new `_toastTimer`
     this._toastTimer = setTimeout(() => {
-      // remove the 'fade-in' class from `toastEl`
-      toastEl.classList.remove('fade-in');
+      // Clearing / reseting up our toast...
+      this._clearToast();
 
-      // And after the toast out duration
-      // HACK: I run outta time so had to write this ugly code below :(
-      this._toastOutTimer = setTimeout(() => {
-        // remove the toast element
-        toastEl.remove();
-        // hide the `toastsEl`
-        this.toastsEl.hidden = true;
+      // set toasting to FALSE
+      this.#toasting = false;
 
-      }, TOAST_OUT_DURATION);
+      // remove the toast element
+      toastEl.remove();
+
+      // hide the `toastsEl`
+      this.toastsEl.hidden = true;
 
       // remove the 'fade-
-    }, timeout - TOAST_OUT_DURATION);
+    }, timeout);
 
   }
 
+  /**
+   * Method used to get all the app's current nav link elements
+   *
+   * @param { Boolean } includeLogo - If TRUE, the logo will be included to the list
+   *
+   * @returns { Array[Element] } navLinks
+   */
+  getAllNavLinks(includeLogo = false) {
+    // Initialize the `navLinks` variable
+    let navLinks = [];
+
+    // if the app's main pages element exists...
+    if (this.mainPagesEl) {
+      // ...select all the elements in main pages with `nav-link` in their class list as `links`
+      let links = this.mainPagesEl.querySelectorAll((!includeLogo) ? '.nav-link:not(.logo)' : '.nav-link');
+
+      // update the `navLinks`
+      navLinks = [...links];
+    }
+
+    // return the `navLinks`
+    return navLinks;
+  }
+
+
+  /**
+   * Checks if the given `page` is valid or supported by this App
+   *
+   * @param { String } page
+   *
+   * @returns { Boolean } Returns TRUE, if the page is supported
+   */
+  isValidPage(page) {
+    // HACK: if the page is empty...make it 'home'
+    // page = (!page.length) ? 'home' : page;
+
+    return (this.getSupportedPages(true).indexOf(page) !== -1) ? true : false;
+  }
+
+  /**
+   * Checks if the given `page` has been loaded already
+   *
+   * @param { String } page
+   *
+   * @returns { Boolean } Returns TRUE, if the `page` has been loaded already
+   */
+  isLoadedPage(page) {
+    // HACK: if the page is empty...make it 'home'
+    // page = (!page.length) ? 'home' : page;
+
+    // HACK: Just check if this has this page as a property 
+    return this.hasOwnProperty(`${page}Page`);
+  }
+
+
+  /**
+   * Returns the type of the given `page`
+   *
+   * @param { String } pageId - id of the page
+   *
+   * @returns { String } 
+   */
+  getPageTypeOf(pageId) {
+    return this.getSupportedPages().filter((page) => page.id === pageId)[0].type;
+  }
 
 
   /* >> Public Setters << */
@@ -768,7 +921,7 @@ export class App extends Engine {
   set currentScreen(screen) {
     this._currentScreen = screen;
     // update the live storage accordingly
-    this.liveStorage?.setItem('screen', screen);
+    this.liveStorage?.setItem('screen', screen, true);
   }
 
   /**
@@ -779,11 +932,20 @@ export class App extends Engine {
   set currentPage(page) {
     this._currentPage = page;
     // update the live storage accordingly
-    this.liveStorage?.setItem('page', page);
+    this.liveStorage?.setItem('page', page, true);
   }
 
 
-
+  /**
+   * Updates the current view of the app with the given `view`
+   *
+   * @param { String } view - name of the view
+   */
+  set currentView(view) {
+    this._currentView = view;
+    // update the live storage accordingly
+    this.liveStorage?.setItem('view', view, true);
+  }
 
 
   /* >> Public Getters << */
@@ -804,6 +966,14 @@ export class App extends Engine {
     return this._currentPage;
   }
 
+
+  /**
+   * Returns the current view of the app 
+   * @param { String } 
+   */
+  get currentView() {
+    return this._currentView;
+  }
 
   /**
    * Returns the app's `<div id="container">` element in the shadow root
@@ -922,6 +1092,59 @@ export class App extends Engine {
   }
 
 
+  /**
+   * Returns the `<main>` element in `pagesEl`
+   *
+   * @returns { Element }
+   */
+  get mainPagesEl() {
+    return this.pagesEl.querySelector('main');
+  }
+
+  /**
+   * Returns the navBar element in `mainPagesEl`
+   *
+   * @return { Element }
+   */
+  get navBarEl() {
+    return this.mainPagesEl.querySelector('.nav-bar');
+  }
+
+
+
+
+
+
+  /**
+   * Returns TRUE if the main pages element (i.e. `mainPagesEl`) 
+   * of the app has been created.
+   *
+   * @returns { Boolean }
+   */
+  get hasMainPages() {
+    return (!!this.mainPagesEl) ? true : false;
+  }
+
+
+  /**
+   * Returns TRUE if the current layout of the app is `narrow`
+   *
+   * @returns { Boolean }
+   */
+  get isNarrowLayout() {
+    return (this.#_currentLayout === 'narrow') ? true : false; // <- #NN ik ;)
+  }
+
+  /**
+   * Returns TRUE if the current layout of the app is `wide`
+   *
+   * @returns { Boolean }
+   */
+  get isWideLayout() {
+    return (this.#_currentLayout === 'wide') ? true : false; // <- #NN ik ;)
+  }
+
+
   /* >> Private Methods << */
   
   /**
@@ -940,6 +1163,9 @@ export class App extends Engine {
     this.toastsEl.hidden = true;
   }
 
+
+  // =========== Dynamic HTML Templates =============== //
+
   /**
    * Returns the html template of a toast based on the specified `type` and `message`
    *
@@ -951,15 +1177,204 @@ export class App extends Engine {
   _getToastHtmlTemplate(type, message) {
     return html`
       <!-- Toast -->
-      <div class="toast fade-in flex-layout horizontal centered">
+      <div class="toast pop-in fade-in flex-layout horizontal centered">
         <!-- Emoji -->
-        <span class="emoji ${type}" ${(!type.length) ? 'hidden' : ''}></span>
+        <span class="toast-emoji ${type}" ${(type === DEFAULT_TOAST_TYPE) ? 'hidden' : ''}></span>
         <!-- Message -->
-        <span class="msg">${message}</span>
+        <span class="toast-msg">${message}</span>
       </div>
       <!-- End of Toast -->
     `;
   }
+
+
+  /**
+   * Returns the html template of the app's pages
+   *
+   * @returns { HTMLTemplate }
+   */
+  _getPagesHtmlTemplate() {
+    return html`
+      <!-- Main Pages -->
+      <main class="flex-layout vertical">
+
+        <!-- Pages-Wrapper -->
+        <div class="pages-wrapper">
+  
+          <!-- Backdrop -->
+          <div class="backdrop fade-in" fit hidden></div>
+  
+          <!-- Dialogs-Container -->
+          <div class="dialogs-container vertical flex-layout" fit hidden></div>
+          <!-- End of Dialogs-Container -->
+  
+          <!-- Menus-Container -->
+          <div class="menus-container vertical flex-layout" fit hidden></div>
+          <!-- End of Menus-Container -->
+  
+        </div>
+        <!-- End of Pages-Wrapper -->
+  
+        <!-- NOTE: NavBar will be injected here -->
+  
+      </main>
+      <!-- End of Main Pages -->
+
+
+      <!-- Aside Pages -->
+      <aside class="flex-layout vertical centered">
+        <!-- Pages-Wrapper -->
+        <div class="pages-wrapper" fit>
+
+          <!-- Backdrop -->
+          <div class="backdrop fade-in" fit hidden></div>
+
+          <!-- Dialogs-Container -->
+          <div class="dialogs-container vertical flex-layout" fit hidden></div>
+          <!-- End of Dialogs-Container -->
+
+          <!-- Menus-Container -->
+          <div class="menus-container vertical flex-layout" fit hidden></div>
+          <!-- End of Menus-Container -->
+  
+        </div>
+        <!-- End of Pages-Wrapper -->
+
+
+        <!-- Outlined App Logo -->
+        <span class="app-logo" outlined></span>
+
+        <!-- Left - Vertical Divider -->
+        <span class="divider vertical left"></span>
+
+      </aside>
+      <!-- End of Aside Pages -->
+  `;
+
+  }
+
+  
+
+  /**
+   * Returns the navBar's html template based on the given `orientation`
+   *
+   * @param { String } orientation - supported orientations are 'vertical' and 'horizontal'
+   * @returns { HTMLTemplate }
+   */
+  _getNavbarHtmlTemplate(orientation = this._navbarOrientation) {
+    // TODO: Create a navbar data object named `navBarData` 
+    // (eg. [{id: 'home', title: 'Home', link: './', icon: 'house'}]),
+    // and use it for multiple anchor/nav-link propagation below
+
+
+    // Create a horizontal navBar html template as `horizNavbarHtmlTemplate`
+    let horizNavbarHtmlTemplate = html`
+      <nav class="nav-bar horizontal flex-layout center">
+        <!-- Top - Horizontal Divider -->
+        <span class="divider horizontal top"></span>
+
+        <!-- Home - NavLink -->
+        <a title="Home" href="./" class="home nav-link">
+          <span class="material-icons icon">home</span>
+          <span class="label">Home</span>
+        </a>
+
+        <!-- Articles - NavLink -->
+        <a title="Articles" href="./articles" class="articles nav-link">
+          <span class="material-icons icon">feed</span>
+          <span class="label">Articles</span>
+        </a>
+
+        <!-- Search - NavLink -->
+        <a title="Search" href="./search" class="search nav-link">
+          <span class="material-icons icon">search</span>
+          <span class="label">Search</span>
+        </a>
+        
+        <!-- Saves - NavLink -->
+        <a title="Saves" href="./saves" class="saves nav-link">
+          <span class="material-icons icon">bookmark_outline</span>
+          <span class="label">Saves</span>
+        </a>
+
+        <!-- Profile - NavLink -->
+        <a title="Profile" href="./profile" class="profile nav-link">
+          <span class="material-icons icon">person</span>
+          <span class="label">Profile</span>
+        </a>
+
+      </nav>
+    `;
+
+
+    // Create a veritcal navBar html template as `vertNavbarHtmlTemplate`
+    let vertNavbarHtmlTemplate = html`
+      <nav class="nav-bar vertical flex-layout center">
+        <!-- Logo | Icon-Wrapper -->
+        <a title="${this.name}" class="nav-link logo icon-wrapper" active>
+          <!-- App Logo -->
+          <span class="app-logo"></span>
+        </a>
+
+        <span flex></span>
+
+        <!-- Home - NavLink -->
+        <a title="Home" href="./" class="home nav-link">
+          <span class="material-icons icon">home</span>
+          <span class="label">Home</span>
+        </a>
+
+        <!-- Articles - NavLink -->
+        <a title="Articles" href="./articles" class="articles nav-link">
+          <span class="material-icons icon">feed</span>
+          <span class="label">Articles</span>
+        </a>
+
+        <!-- Search - NavLink -->
+        <a title="Search" href="./search" class="search nav-link">
+          <span class="material-icons icon">search</span>
+          <span class="label">Search</span>
+        </a>
+        
+        <!-- Saves - NavLink -->
+        <a title="Saves" href="./saves" class="saves nav-link">
+          <span class="material-icons icon">bookmark_outline</span>
+          <span class="label">Saves</span>
+        </a>
+
+        <!-- Profile - NavLink -->
+        <a title="Profile" href="./profile" class="profile nav-link">
+          <span class="material-icons icon">person</span>
+          <span class="label">Profile</span>
+        </a>
+
+        <span class="divider horizontal"></span>
+        <!-- Settings - NavLink -->
+        <a title="Settings" href="./settings" class="settings nav-link">
+          <span class="material-icons icon">settings</span>
+        </a>
+
+        <span flex></span>
+
+        <!-- Log Out - NavLink -->
+        <a title="Log out" class="nav-link" role="icon-button">
+          <span class="material-icons icon">power_settings_new</span>
+        </a>
+
+        <!-- Right - Vertical Divider -->
+        <span class="divider vertical right"></span>
+
+      </nav>
+    `;
+
+
+    // return the correct html template
+    return (orientation === 'horizontal') ? horizNavbarHtmlTemplate : vertNavbarHtmlTemplate;
+
+  }
+
+
+  // ======== END of Dynamic HTML Templates =========  //
 
   /**
    * Handler that is called whenever the browser's URL or location changes
@@ -969,38 +1384,49 @@ export class App extends Engine {
    */
   _handleNavigation(location, event) {
 
+    // get the page route as `page`
+    let page = getPageRoute(location, BASE_DIR);
+
+    // get the view route as `view`
+    let view = getViewRoute(location, BASE_DIR);
+
+    // get the search params as `params`
+    let params = getSearchParams(location, BASE_DIR);
+
     // create a url with the `location`
     let url = new URL(location);
-
-    // Replace the base in the location with a `/`
-    //location = location.replace(BASE_DIR, '/');
-
-    // get the origin
-    let origin = url.origin + BASE_DIR;
-
-    // get the page from the `url`
-    let page = url.pathname.replace(BASE_DIR, '/').split('/')[1];
-
-    // get the view from the `url`
-    let view = url.pathname.split('/').pop();
-
-    // get the search parameters as `params`
-    let params = new URLSearchParams(url.search);
 
     // check for screens
     let isScreens = (!page.length && !view.length) ? true : false; 
 
+    // check for pages
+    let isPages = (this.mainPagesEl) ? true : false;
+
+    // update the current page and view
+    this.currentPage = (!this.currentScreen && page.length === 0) ? 'home' : page;
+    this.currentView = view;
     
     // if we are most likely on a splash or welcome screen...
     if (isScreens && [SPLASH_SCREEN, WELCOME_SCREEN].indexOf(this.currentScreen) !== -1) {
       // ...navigate the screens using the params
       this._navigateScreens(params);
+
+    } else if (isPages) { // <- we are most likely on the main pages view
+      // ...notify the nav links
+      this.notifyNavLinks();
+
+      // navigate the pages using the page, view and params
+      this._navigatePages(this.currentPage, view, params);
     }
 
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[35m[_handleNavigation](1): location => ${location} & event => \x1b[0m`, event);
-    console.log(`\x1b[35m[_handleNavigation](2): page => ${page} & view => ${view} & params => \x1b[0m`, params.toString());
+    console.log(`\x1b[35m[_handleNavigation](2): page => ${page} (length: ${page.length}) & view => ${view} & params => \x1b[0m`, params.toString());
+    console.log(`\x1b[35m\n[_handleNavigation](3): 
+      + currentPage => ${this.currentPage} & 
+      + currentView => ${this.currentView} & 
+      + params => \x1b[0m`, params);
 
   }
 
@@ -1027,6 +1453,63 @@ export class App extends Engine {
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[42m\x1b[30m[_navigateScreens]: params => \x1b[0m`, params);
+
+  }
+
+
+  
+  /**
+   * Method used to navigate through pages,
+   * useing the specified `page`, `view` and `params`
+   *
+   * @param { String } page
+   * @param { String } view
+   * @param { Object } params
+   */
+  _navigatePages(page, view, params) {
+    // do nothing (for now), if the page is not found or not valid
+    if (!this.isValidPage(page)) { return }
+
+    // Initialize the `pageObject` variable
+    let pageObject = null;
+
+
+    // Checking page availability...
+    
+    // if the page has *NOT* been loaded...
+    if (this.isLoadedPage(page) === false) {
+      // start loading the page
+      this._pageLoading = true;
+      
+      //let loadedPages = await this._loadPages([page], PAGES_DIR); 
+      this._loadPages([page], PAGES_DIR).then((loadedPages) => {
+        // ...stop loading the page
+        this._pageLoading = false;
+
+        // Initialize and open the page
+        pageObject = this._initPage(loadedPages[0], true);
+
+        // DEBUG [4dbsmaster]: tell me about it ;)
+        console.log(`\x1b[3m[_navigatePages] (1): page loaded!!! pageObject => \x1b[0m`, pageObject);
+      });
+       
+    }else { // <- page has already been loaded
+      // get the page object
+      pageObject = this[`${page.toCamelCase()}Page`];
+
+      // If the `pageObject` is not attached to this App...
+      if (!pageObject.isAttached) {
+        // ...open the page
+        pageObject.open();
+      }else {
+        // just show the page 
+        pageObject.show();
+      }
+     
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[47m\x1b[30m[_navigatePages] (2): pageObject => \x1b[0m`, pageObject);
 
   }
 
@@ -1073,6 +1556,75 @@ export class App extends Engine {
     console.log(`\x1b[33m[_handleChangedStorageItems](2): changedStorageItems => \x1b[0m`, changedStorageItems);
   }
 
+  /**
+   * Handler that is called whenever the app's screen changes to a narrow layout.
+   *
+   * @param { Boolean } firstQuery
+   */
+  _handleNarrowLayout(firstQuery) {
+    // update the private `#_currentLayout` variable to `narrow`
+    this.#_currentLayout = 'narrow';
+
+    // IDEA: Replace the app's vertical navBar with a horizontal navBar
+
+    // if the main pages elements are displayed...
+    if (this.mainPagesEl) {
+      // ...replace the 'horizontal' class of the main element w/ 'vertical'
+      this.mainPagesEl.classList.replace('horizontal', 'vertical');
+
+      // remove the current navBar element
+      this.navBarEl.remove();
+
+      // get the navbar's *horizontal* html template as `navbarHtml`
+      let navbarHtml = this._getNavbarHtmlTemplate('horizontal');
+
+      // append / insert the `navbarHtml` into `mainPagesEl` (beforeend)
+      this.mainPagesEl.insertAdjacentHTML('beforeend', navbarHtml);
+
+      // notify the nav links
+      this.notifyNavLinks();
+    }
+    
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[2;35m[_handleNarrowLayout]: firstQuery ? ${firstQuery}\x1b[0m`);
+  }
+
+
+  /**
+   * Handler that is called whenever the app's screen changes to a wide layout.
+   *
+   * @param { Boolean } firstQuery
+   */
+  _handleWideLayout(firstQuery) {
+    // update the private `#_currentLayout` variable to `wide`
+    this.#_currentLayout = 'wide';
+
+    // IDEA: Replace the app's horizontal navBar with a vertical navBar
+
+    // if the main pages elements are displayed...
+    if (this.mainPagesEl) {
+      // ...replace the 'vertical' class of the main element w/ 'horizontal'
+      this.mainPagesEl.classList.replace('vertical', 'horizontal');
+
+      // remove the current navBar element
+      this.navBarEl.remove();
+
+      // get the navbar's *vertical* html template as `navbarHtml`
+      let navbarHtml = this._getNavbarHtmlTemplate('vertical');
+
+      // append / insert the `navbarHtml` into `mainPagesEl` (afterbegin)
+      this.mainPagesEl.insertAdjacentHTML('afterbegin', navbarHtml);
+
+      // notify the nav links
+      this.notifyNavLinks();
+    }
+
+    // TODO: Re-install necessary event listeners here (NOT THE BEST WAY IK)
+
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[2;35m[_handleWideLayout]: firstQuery ? ${firstQuery}\x1b[0m`);
+  }
 
   /**
    * Creates the app
@@ -1135,41 +1687,43 @@ export class App extends Engine {
 
 
 
-
   /**
-   * Handler that is called when on or more pages have been loaded
-   *
-   * @param { Array[Object] } loadedPages
+   * Method used to render the pages template
+   * @private
    */
-  _onPagesLoaded(loadedPages) {
-    // loop through the pages
-    loadedPages.forEach((page) => {
-      // If the Home Page has been loaded...
-      if (page.name === HOME_PAGE) {
-        // ...handle the home page load
-        this._homePageLoadHandler(page.object);
-      }
-    });
+  #renderPages() {
+    // get the pages html template as `pagesHtml`
+    let pagesHtml = this._getPagesHtmlTemplate();
 
-    // DEBUG [4dbsmaster]: tell me about it ;)
-    console.log(`\x1b[34m[_onPagesLoaded]: page.name => ${page.name} & page.object => \x1b[0m`, page.object);
+    // insert this `pagesHtml` into the pages element
+    this.pagesEl.innerHTML = pagesHtml;
+
+    // get the navbar's html template as `navbarHtml`
+    let navbarHtml = this._getNavbarHtmlTemplate(this.isNarrowLayout ? 'horizontal' : 'vertical');
+
+    // append the `navbarHtml` into `mainPagesEl`
+    this.mainPagesEl.insertAdjacentHTML('beforeend', navbarHtml);
   }
 
-  /**
-   * Handler that is called when the home page loads
-   *
-   * @param { Class } HomePage
-   */
-  _homePageLoadHandler(HomePage) {
-    // If there's no `homePage` object in this `App`...
-    if (!this.homePage) {
-      // ...create an object of `HomePage` class as `homePage`
-      this.homePage = new HomePage(PRIMARY_PAGE_TYPE);
-    }
 
-    // DEBUG [4dbsmaster]: tell me about it ;)
-    console.log(`\x1b[34m[_homePageLoadHandler](1): this.pagesEl => `, this.pagesEl);
-    console.log(`\x1b[34m[_homePageLoadHandler](2): HomePage => `, HomePage);
+  /**
+   * Shows the app's pages
+   * @private
+   */
+  #showPages() {
+    // TODO: Make sure the corresponding page has been loaded before proceeding
+
+    // clear or empty the splash & welcome screen's shadow root
+    this.splashScreen.shadowRoot.innerHTML = '';
+    this.welcomeScreen.shadowRoot.innerHTML = '';
+
+    // hide the screens root
+    this.screensEl.hidden = true;
+
+    // show the pages root
+    this.pagesEl.hidden = false;
+
+
   }
 
 
@@ -1224,23 +1778,70 @@ export class App extends Engine {
     // listen to the `last-step` event
     this.welcomeScreen.on('last-step', () => { 
       /* TODO: start loading the home page */
-      // If there's no `homePage` in `App`
-      if (!this.homePage) {
-        // ...load the home page
-        this._loadPages([HOME_PAGE]).then((loadedPages) => this._onPagesLoaded(loadedPages));
+
+      // Getting ready for our main pages...
+
+      // if there's no main in pages...
+      if (this.hasMainPages === false) {
+        // ...render / create pages template
+        this.#renderPages();
       }
+
+      // IDEA: Programatically load the current page
+
+      // get the current page route as `pageRoute`
+      let pageRoute = getPageRoute(window.location, BASE_DIR);
+
+      // get the current page as 'page' (or home as default)
+      let page = (!pageRoute.length) ? 'home' : pageRoute;
+
+      // if the current page is valid but has not been loaded
+      if (this.isValidPage(page) && !this.isLoadedPage(page)) {
+        // ..load this page right now (in anticipation)
+        this._loadPages([page]).then((loadedPages) => {
+          // Initialize the page
+          this._initPage(loadedPages[0]);
+          
+        });
+      }
+
+
     });
 
     // listen to the `start` event
-    this.welcomeScreen.on('start', () => { 
+    this.welcomeScreen.on('start', () => {
       /* TODO: load again & show the home page */
-      
+      // get the current page route as `pageRoute`
+      let pageRoute = getPageRoute(window.location, BASE_DIR);
+      let viewRoute = getViewRoute(window.location, BASE_DIR);
+
+      // set the current screen to an empty string
+      this.currentScreen = '';
+      this.currentPage = (!pageRoute.length) ? 'home' : pageRoute;
+      this.currentView = viewRoute;
+
+      // show pages
+      this.#showPages();
+
+      // notify the nav links
+      this.notifyNavLinks();
+
+      // get the pending page object as `pendingPage`
+      let pendingPage = this._getPendingPageObject();
+      // open the `pendingPage`
+      pendingPage.open();
+      // remove the pending page from 
+
+
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.log(`\x1b[40m\x1b[37m[welcomeScreen] (START) & pendingPage => \x1b[0m`, pendingPage);
+
     });
 
     // listen to the `theme-select` event
     this.welcomeScreen.on('theme-select', (selectedTheme) => {
       // update the app's theme
-      this.updateTheme(selectedTheme);
+      this.updateTheme(selectedTheme, true);
 
       // call the `onThemeUpdated()` method
       this.onThemeUpdated(selectedTheme);
@@ -1249,12 +1850,85 @@ export class App extends Engine {
     // listen to the `lang-select` event
     this.welcomeScreen.on('lang-select', (selectedLang) => {
       // update the app's lang
-      this.updateLang(selectedLang);
+      this.updateLang(selectedLang, true);
 
       // call the `onLangUpdated()` method
       this.onLangUpdated(selectedLang);
     });
 
+  }
+
+  /**
+   * Method used to initialize the recently `loadedPage`.
+   * This method instantiates the page's class into the App
+   *
+   * Example:
+   *   _initPage(loadedPages[0], true); // <- instantiates the first page and opens it right after
+   *
+   * @param { Object } loadedPage
+   * @param { Boolean } autoOpen - If TRUE, the page will be opened after instantiation
+   *
+   * @returns { Object } - an instance of the page
+   */
+  _initPage(loadedPage, autoOpen) {
+    // TODO: do nothing if the `loadedPage` has already been instantiated
+    
+    // get the page name as `pageName`
+    let pageName = `${loadedPage.name}-page`;
+    // get the page object as `PageClass`
+    let PageClass = loadedPage.object;
+    // get the type of this page
+    let pageType = this.getPageTypeOf(loadedPage.name);
+
+    // get the page id
+    let pageId = pageName.toCamelCase(); // <- e.g. returns; homePage (if pageName is 'home-page')
+
+    // instantiate the page in this app
+    this[pageId] = new PageClass(pageType, pageName);
+
+    // if `autoOpen` is TRUE
+    if (autoOpen) {
+      this[pageId].open();
+    } else {
+      // set this page object to pending
+      this._setPendingPageObject(this[pageId]);
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[40m\x1b[34m[_initPage] (1|in anticipation): pageType => ${pageType} & pageName => ${pageName} & pageId => ${pageId}`); 
+    console.log(`\x1b[40m\x1b[34m[_initPage] (2|in anticipation): loadedPage => \x1b[0m`, loadedPage);
+
+    // return an instance of the page
+    return this[pageId];
+  }
+
+
+  /**
+   * Sets or Updates the pending page object with the given `pageObject`
+   *
+   * @param { Object } pageObject
+   */
+  _setPendingPageObject(pageObject) {
+    this.__pendingPageObj = pageObject;
+  }
+
+
+  /**
+   * Returns the pending page
+   *
+   * @returns { Object }
+   */
+  _getPendingPageObject() {
+    return this.__pendingPageObj;
+  }
+
+
+  /**
+   * Removes the pending page.
+   * This method sets the private `__pendingPageObj` variable to null
+   */
+  _removePendingPageObject() {
+    this.__pendingPageObj = null;
   }
 
   /**
@@ -1307,6 +1981,7 @@ export class App extends Engine {
 
       // set the current screen to welcome screen
       this.currentScreen = WELCOME_SCREEN;
+      this.currentPage = ''; // <- reset the current page
 
       // DEBUG [4dbsmaster]: tell me about it ;)
       console.log(`\x1b[44m[_splashScreenLoadHandler](progress-complete|event) target => \x1b[0m`, target);
