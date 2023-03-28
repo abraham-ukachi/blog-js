@@ -64,7 +64,7 @@
    
    
   <!-- Base -->
-  <base href="blog-js">
+  <base href="/blog-js/">
 
   <!-- Logo - Icon -->
   <link rel="icon" href="assets/images/favicon.ico">
