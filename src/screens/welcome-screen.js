@@ -75,6 +75,8 @@ export class WelcomeScreen extends Screen {
    */
   static get properties() {
     return {
+      theme: { type: String },
+      lang: { type: String },
       updated: { type: Boolean },
       shown: { type: Boolean },
       currentStep: { type: Number },
@@ -100,7 +102,7 @@ export class WelcomeScreen extends Screen {
    * Animations
    *
    * @type { Array }
-*/
+   */
   static get animations() {
     return [ 'slide-from-right', 'slide-from-left', 'slide-left', 'slide-right', 'fade-in' ];
   }
@@ -139,6 +141,8 @@ export class WelcomeScreen extends Screen {
    */
   init() {
     // Initialize public properties
+    this.theme = blogJSApp.theme;
+    this.lang = blogJSApp.lang;
     this.updated = false;
     this.shown = false;
     this.currentStep = 0;
@@ -375,6 +379,17 @@ export class WelcomeScreen extends Screen {
       dotEl.addEventListener('click', (event) => this.stepTo(index));
     });
 
+    // looping through all the theme menu-item elements...
+    this.themeEls.forEach((themeEl) => {
+      // ...listen to the 'click' events on each `themeEl`
+      themeEl.addEventListener('click', (event) => this._handleThemeClick(event));
+    });
+
+    // looping through all the language menu-item elements...
+    this.langEls.forEach((langEl) => {
+      // ...listen to the 'click' events on each `langEl`
+      langEl.addEventListener('click', (event) => this._handleLangClick(event));
+    });
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[33m[firstUpdated]: ${this.name} has been updated #firstTime ;)\x1b[0m`);
@@ -403,6 +418,14 @@ export class WelcomeScreen extends Screen {
         this._handleChangeSettingChange(prop.value);
       }
 
+      if (prop.name === 'lang') {
+        this._handleLangChange(prop.value);
+      }
+
+      if (prop.name === 'theme') {
+        this._handleThemeChange(prop.value);
+      }
+
     });
   }
 
@@ -410,6 +433,61 @@ export class WelcomeScreen extends Screen {
 
   /* >> Public Methods << */
 
+
+  /**
+   * Notifies this screen of the recent lang update
+   *
+   * @param { String } ?lang - optional
+   */
+  notifyLangUpdate(lang = this.lang) {
+
+    // do nothing if the current change setting is not language
+    if (this.changeSetting !== LANGUAGE_CHANGE_SETTING) { return }
+
+    // Updating the language menu...
+    
+    // get the old or previously selected language element as `oldLangEL`
+    let oldLangEl = this.getSelectedLangElement();
+
+    // get the new language element as `newLangEl`
+    let newLangEl = this.getLangElementById(lang);
+
+    if (oldLangEl !== newLangEl) {
+      // remove the `selected` property from `oldLangEl`
+      oldLangEl.removeAttribute('selected');
+
+      // add the `selected` property to `newLangEl`
+      newLangEl.setAttribute('selected', '');
+    }
+
+  }
+
+  /**
+   * Notifies this screen of the recent theme update
+   *
+   * @param { String } ?theme - optional
+   */
+  notifyThemeUpdate(theme = this.theme) {
+
+    // do nothing if the current change setting is not a theme 
+    if (this.changeSetting !== THEME_CHANGE_SETTING) { return }
+
+    // Updating the theme menu...
+    
+    // get the old or previously selected theme element as `oldThemeEL`
+    let oldThemeEl = this.getSelectedThemeElement();
+
+    // get the new language element as `newThemeEl`
+    let newThemeEl = this.getThemeElementById(theme);
+
+    if (oldThemeEl !== newThemeEl) {
+      // remove the `selected` property from `oldThemeEl`
+      oldThemeEl.removeAttribute('selected');
+
+      // add the `selected` property to `newThemeEl`
+      newThemeEl.setAttribute('selected', '');
+    }
+  }
 
   /**
    * Go to the next step
@@ -573,6 +651,51 @@ export class WelcomeScreen extends Screen {
   }
 
 
+  /**
+   * Returns the currently selected language element
+   *
+   * @returns { Element }
+   */
+  getSelectedLangElement() {
+    return this.shadowRoot.querySelector('.lang[selected]');
+  }
+
+
+  /**
+   * Returns the currently selected theme element
+   *
+   * @returns { Element }
+   */
+  getSelectedThemeElement() {
+    return this.shadowRoot.querySelector('.theme[selected]');
+  }
+
+
+  /**
+   * Returns the language menu-item element with the given `langElementId`
+   * (e.g. `<li class="lang" role="menu-item">`)
+   *
+   * @param { String } langElementId - the `[data-id]` attribute of the language menu-item
+   *
+   * @returns { Element }
+   */
+  getLangElementById(langElementId) {
+    return this.shadowRoot.querySelector(`.lang[data-id="${langElementId}"]`);
+  }
+
+  /**
+   * Returns the theme menu-item element with the given `themeElementId`
+   * (e.g. `<li class="theme" role="menu-item">`)
+   *
+   * @param { String } themeElementId - the `[data-id]` attribute of the theme menu-item
+   *
+   * @returns { Element }
+   */
+  getThemeElementById(themeElementId) {
+    return this.shadowRoot.querySelector(`.theme[data-id="${themeElementId}"]`);
+  }
+
+
   /* >> Public Setters << */
 
   /* >> Public Getters << */
@@ -679,6 +802,24 @@ export class WelcomeScreen extends Screen {
     return this.shadowRoot.querySelectorAll('.dot');
   }
 
+
+  /**
+   * Returns a list of all theme menu-item elements
+   *
+   * @returns { Array[Element] }
+   */
+  get themeEls() {
+    return this.shadowRoot.querySelectorAll('.theme');
+  }
+
+  /**
+   * Returns a list of all theme language-item elements
+   *
+   * @returns { Array[Element] }
+   */
+  get langEls() {
+    return this.shadowRoot.querySelectorAll('.lang');
+  }
 
   /**
    * Returns a list of all view elements
@@ -790,6 +931,10 @@ export class WelcomeScreen extends Screen {
     
     // update the text content of `settingsTitleEl` 
     this.settingsTitleEl.textContent = settingsTitle; 
+
+    // notify both theme and lang updates
+    this.notifyThemeUpdate();
+    this.notifyLangUpdate();
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[32m[_handleChangeSettingChange]: changeSetting => ${changeSetting}`);
@@ -920,6 +1065,69 @@ export class WelcomeScreen extends Screen {
     
 
   }
+
+  /**
+   * Handler that is called whenever a theme menu-item in settings container is clicked
+   *
+   * @param { PointerEvent } event
+   */
+  _handleThemeClick(event) {
+    // get the theme from the menu-item or target as `theme`
+    let theme = event.currentTarget.dataset.id;
+    
+    // if `theme` is different from the current / screen's `theme`...
+    if (theme !== this.theme) {
+      // trigger the 'theme-select' event
+      this.trigger('theme-select', theme);
+    }
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[36m[_handleThemeClick]: theme => ${theme} & event => \x1b[0m`, event);
+
+  }
+
+
+  /**
+   * Handler that is called whenever a language menu-item in settings container is clicked
+   *
+   * @param { PointerEvent } event
+   */
+  _handleLangClick(event) {
+    // get the language from the menu-item or target as `lang`
+    let lang = event.currentTarget.dataset.id;
+
+    // if `lang` is different from the current / screen's `lang`...
+    if (lang !== this.lang) {
+      // ..trigger the 'lang-select' event
+      this.trigger('lang-select', lang);
+    }
+
+
+    // DEBUG [4dbsmaster]: tell me about it ;)
+    console.log(`\x1b[36m[_handleLangClick]: lang => ${lang} & event => \x1b[0m`, event);
+  }
+
+
+  /**
+   * Handler that is called whenever `lang` changes
+   *
+   * @param { String } newLang - the new lang
+   */
+  _handleLangChange(newLang) {
+    // notify this screen of this recent language update
+    this.notifyLangUpdate(newLang);
+  }
+
+  /**
+   * Handler that is called whenever `theme` changes
+   *
+   * @param { String } newTheme - the new theme 
+   */
+  _handleThemeChange(newTheme) {
+    // notify this screen of this recent theme update
+    this.notifyThemeUpdate(newTheme);
+  }
+
 
   /**
    * Method used to load the `welcomePackage` object
