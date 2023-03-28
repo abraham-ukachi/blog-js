@@ -278,11 +278,12 @@ export const loaderMixin = {
           let viewObject = module[viewClassName];// eval(`new module.${viewClassName}(viewId)`);
 
           // Add this view to the `loadedViews` list
-          loadedViews.push({ name: viewName, object: viewObject });
+          loadedViews.push({ id: viewId, name: viewName, object: viewObject });
 
           // If the number of loaded views is equal to the total views to be loaded
           if (loadedViews.length === views.length) {
             // ...resolve this promise w/ the `loadedViews`
+              
             resolve(loadedViews);
 
             // TODO: Call the `onViewsLoaded()` method
@@ -292,10 +293,12 @@ export const loaderMixin = {
           // DEBUG [4dbsmaster]: tell me about it ;)
           console.log(`\x1b[32m[_loadViews](2): viewUrl => ${viewUrl} LOADED !!! module => \x1b[0m`, module);
           console.log(`\x1b[32m[_loadViews](3): viewClassName => \x1b[0m`, viewClassName);
+        }, (error) => {
+            console.error('[importError]: error => ', error);
         });
 
         // DEBUG [4dbsmaster]: tell me about it ;)
-        console.log(`\x1b[32m[_loadViews](1): viewName to be loaded => ${viewName}\x1b[0m`);
+        console.log(`\x1b[32m[_loadViews](1): viewName => ${viewName} & viewUrl => ${viewUrl}\x1b[0m`);
       }
 
     });
