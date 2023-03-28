@@ -66,7 +66,8 @@ export class HomePage extends Page {
   static get properties() {
     return {
       updated: { type: Boolean },
-      opened: { type: Boolean }
+      opened: { type: Boolean },
+      hidden: { type: Boolean }
     };
   }
 
@@ -134,6 +135,7 @@ export class HomePage extends Page {
     // Initialize public properties
     this.updated = false;
     this.opened = false;
+    this.hidden = false;
     
     // Initialize private properties
     
@@ -166,6 +168,7 @@ export class HomePage extends Page {
   firstUpdated() {
 
     // add event listeners here
+    // this.containerEl.addEventListener('click', (event) => console.log(event.composedPath()));
 
     console.log(`\x1b[33m[firstUpdated]: ${this.name} has been updated #firstTime ;)\x1b[0m`);
   }
