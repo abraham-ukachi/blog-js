@@ -305,7 +305,7 @@ body, #appContainer {
 
 
 /* MAIN part of App Layout */
-#appLayout > main {
+#appLayout > main, #pages > main {
   position: relative;
   flex: 1;
   width: 100%;
@@ -313,7 +313,7 @@ body, #appContainer {
 }
 
 /* ASIDE part of App Layout */
-#appLayout > aside {
+#appLayout > aside, #pages > aside {
   display: none;
   position: relative;
   width: var(--aside-width, 50%);
@@ -398,6 +398,7 @@ aside > span.app-logo {
   position: relative;
   box-sizing: border-box;
   background: var(--background-color);
+  font-size: 0.75rem;
 }
 
 /* Vertical Nav Bar */
@@ -423,18 +424,29 @@ aside > span.app-logo {
 
 /* Horizontal Nav Bar & Footer of Main */
 .nav-bar.horizontal, main > footer {
-  height: var(--nav-bar-size, 54px);
+  height: var(--nav-bar-size, 60px);
 }
 
 /* Horizontal Nav Bar */
 .nav-bar.horizontal {
-  padding: 0 var(--nav-bar-padding-horizontal, 48px);
+  padding: 0 var(--nav-bar-padding-horizontal, 0.5rem);
   width: 100%;
+  justify-content: space-between;
 }
 
 /* Nav Links in a Horizontal Nav Bar */
 .nav-bar.horizontal .nav-link {
-  width: var(--nav-bar-size, 54px);
+  width: var(--nav-bar-size, calc(100% / 5));
+  overflow: hidden;
+}
+
+.nav-bar.horizontal .nav-link > .label {
+  line-height: 1.25rem;
+  margin-bottom: -0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  text-align: center;
 }
 
 
@@ -549,13 +561,18 @@ a[active] .icon-button, a[role="icon-button"][active] {
 
 
 /* Content */
-#content {
+#content, #pages .pages-wrapper {
   display: block;
   position: relative;
   box-sizing: border-box;
   flex: 1;
   overflow: scroll;
   scroll-behavior: smooth;
+}
+
+#pages aside .pages-wrapper {
+  position: absolute;
+  z-index: 10;
 }
 
 /* Container of Content */
@@ -1187,7 +1204,7 @@ em {
   
   /* Horizontal Nav Bar & Footer of Main */
   .nav-bar.horizontal, main > footer {
-    height: var(--nav-bar-size, 68px);
+    height: var(--nav-bar-size, 100%); /* b4: 68px */
   }
 
   /* Responsive Horizontal Nav Bar */
@@ -1207,7 +1224,7 @@ em {
   }
 
   /* ASIDE part of App Layout */
-  #appLayout > aside {
+  #appLayout > aside, #pages > aside {
     display: flex;
   }
 
@@ -1327,7 +1344,7 @@ em {
 @media (min-width: 1024px) and (max-width: 2560px) {
 
   /* ASIDE part of App Layout */
-  #appLayout > aside {
+  #appLayout > aside, #pages > aside {
     width: 60%;
   }
 
