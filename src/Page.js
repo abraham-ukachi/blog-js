@@ -40,6 +40,7 @@
 
 import { html, Engine } from './Engine.js'; // <- we just need stuff from our custom engine to get started #LOL !!! :)
 import { eventMixin } from './helpers/mixins/event-mixin.js';
+import { VIEWS_DIR } from './App.js';
 
 "use strict"; 
 // ^^^^^^^^^ This keeps us on our toes, as it forces us to use all pre-defined variables, among other things 😅
@@ -64,7 +65,8 @@ export class Page extends Engine {
   static get properties() {
     return {
       updated: { type: Boolean },
-      opened: { type: Boolean }
+      opened: { type: Boolean },
+      hidden: { type: Boolean }
 
     };
   }
@@ -98,7 +100,7 @@ export class Page extends Engine {
 
 
   /**
-   * Page 
+   * Pages
    *
    * Example:
    *   [
@@ -107,7 +109,7 @@ export class Page extends Engine {
    *
    * @type { Array[Object] }
    */
-  static get page() {
+  static get pages() {
     return [];
   }
 
@@ -121,18 +123,19 @@ export class Page extends Engine {
    * Constructor of the Page
    * NOTE: This constructor will be executed automatically when a new page object gets created.
    *
+   * @param { String } type - the type of the page. supported types are `main` and `aside`
    * @param { String } name - the name of the page (e.g. 'home-page')
    */
-  constructor(name = 'home-page') {
+  constructor(type, name = 'home-page') {
     super();
     
     // set default attributes
-    // this.root = root;
+    this.type = type;
     this.name = name;
 
-    console.log(`[[[ 2 ]]] name => ${name} && this.root ===> `, this.root);
+    console.log(`[[[ 1 ]]] type => ${type} & name => ${name} && this.root ===> `, this.root);
 
-    console.log(`[[[ 3 ]]] blogJSApp ===> `, blogJSApp.pagesEl);
+    console.log(`[[[ 2 ]]] blogJSApp ===> `, blogJSApp.pagesEl);
     // create the page 
     // MOI: """well...we're in a constructor aren't we?  #lol ;)"""
     this.#create();
@@ -148,6 +151,7 @@ export class Page extends Engine {
 
     this.updated = false;
     this.opened = null;
+    this.hidden = false;
 
     // Initialize private properties
   }
@@ -200,6 +204,9 @@ export class Page extends Engine {
         this.#_openedHandler(prop.value);
       }
 
+      if (prop.name === 'hidden') {
+        this.#_hiddenHandler(prop.value);
+      }
     });
   }
 
@@ -248,6 +255,35 @@ export class Page extends Engine {
     });
 
 
+
+
+    
+  }
+
+
+  // Opens the page
+  async open() {
+    // TODO: Make sure the page has not been opened already
+    await this.run();
+
+    // load all the views
+    await this._loadViews(this.getViews(), this.getRealName(), VIEWS_DIR).then((loadedViews) => {
+      
+      // Initialize the views
+      this.#_initViews(loadedViews);
+
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.log(`\x1b[33m[open]: loadedView => \x1b[0m`, loadedViews);
+
+    });
+
+    // await super.run();
+    this.opened = true;
+
+    // show the page
+    this.show();
+
+
     // HACK / IDEA: allocating enough time before executing the `onReady()` method,
     //              this is to prepare for any unforseen issues
     // after 0.1 seconds or 100 milliseconds...
@@ -256,17 +292,6 @@ export class Page extends Engine {
       this.onReady();
     }, 100);
 
-
-    
-  }
-
-
-  // Opens the page
-  open() {
-    // TODO: Make sure the page has not been opened already
-    this.run();
-    // await super.run();
-    this.opened = true;
   }
 
   // Closes the page
@@ -275,6 +300,17 @@ export class Page extends Engine {
     this.shadowRoot.innerHTML = '';
 
     this.opened = false;
+  }
+
+
+  // Show the page
+  show() {
+    this.hidden = false;
+  }
+
+  // Hide the page
+  hide() {
+    this.hidden = true;
   }
 
 
@@ -287,6 +323,30 @@ export class Page extends Engine {
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[40m\x1b[31m[onReady]: ${this.name} is ready`); 
+  }
+
+
+  /**
+   * Returns all the views supported by this page.
+   *
+   * @returns { Array }
+   */
+  getViews() {
+    return this.constructor.pages[0].views;
+  }
+
+
+  /**
+   * Returns the real page name.
+   * This method removes any trailing '-page'.
+   *
+   * Example: 
+   *   'home-page' becomes 'home' ;)
+   *
+   * @returns { String } 
+   */
+  getRealName() {
+    return this.name.split('-page')[0];
   }
 
   
@@ -306,19 +366,19 @@ export class Page extends Engine {
   /**
    * Returns the pages's `<div id="splashPageContainer">` element in the shadow root
    * 
-   * @returns { Element } containerEl (e.g. )
+   * @returns { Element } containerEl (e.g.)
    */
   get containerEl() {
     return this.shadowRoot.getElementById(`${this.pageId}Container`); // <- e.g. 'pageContainer'
   }
 
   /**
-   * Returns the root of the screeen (i.e. `<div id="pages">` )
+   * Returns the root of the screeen (i.e. `<div class="pages-wrapper">` )
    *
    * @returns { Element }
    */
   get root() {
-    return blogJSApp.pagesEl;
+    return blogJSApp.pagesEl.querySelector(`${this.type} .pages-wrapper`);
   }
 
   /**
@@ -331,7 +391,6 @@ export class Page extends Engine {
     return blogJSApp.shadowRoot.getElementById(this.pageId);
   }
 
-
   /**
    * Returns the shadow root of the app.
    *
@@ -340,8 +399,16 @@ export class Page extends Engine {
   get shadowRoot() {
     return this.host.shadowRoot;
   }
-  
 
+  /**
+   * REturn TRUE if the page has been attached to the app,
+   * or if the shadoRoot has been attached to the `host`
+   *
+   * @returns { Boolean }
+   */
+  get isAttached() {
+    return this.host.shadowRoot !== null;
+  }
 
   /**
    * Returns the `<template>` element inside the `host`
@@ -360,6 +427,15 @@ export class Page extends Engine {
    */
   get documentFragment() {
     return this.template.content.cloneNode(true);
+  }
+
+  /**
+   * Returns the `<div id="views">` element.
+   *
+   * @returns { Element }
+   */
+  get viewsEl() {
+    return this.shadowRoot.getElementById('views');
   }
 
 
@@ -382,7 +458,8 @@ export class Page extends Engine {
     hostEl.classList.add('page');
     hostEl.setAttribute('fit', '');
     // append this `hostEl` to the root
-    this.root.appendChild(hostEl);
+    //this.root.appendChild(hostEl);
+    this.root.insertAdjacentElement('afterbegin', hostEl);
     // blogJSApp.pagesEl.appendChild(hostEl);
      
     // get the formatted html template string from `render()` as `formattedHTML`
@@ -446,6 +523,42 @@ export class Page extends Engine {
       this.onClose();
     }
 
+
+  }
+
+  /**
+   * Method used to initialize all the `loadedViews` of this page
+   *
+   * @param { Array } loadedViews
+   */
+  #_initViews(loadedViews) {
+    // looping through each view
+    loadedViews.forEach((view) => {
+      // get the view's id, name and class as `viewId`, `viewName` and `viewClass` respectively
+      let viewId = view.id;
+      let viewName = view.name;
+      let viewClass = view.object;
+
+      // instantiate the view class and assign it's object to this page
+      this[viewId] = new viewClass(this.viewsEl, this.viewName);
+
+      // DEBUG [4dbsmaster]: tell me about it ;)
+      console.log(`\x1b[40m\x1b[37m[_initViews](1|loadedViews): viewId => ${viewId} & viewName => ${viewName}\x1b[0m`);
+    });
+  }
+
+
+  /**
+   * Handler that is called whenever `hidden` property changes
+   *
+   * @param { Boolean } hidden
+   */
+  #_hiddenHandler(hidden) {
+    // do nothing if the page is not attached
+    if (!this.isAttached) { return }
+
+    // hide or unhide the `host` element accordingly ;)
+    this.host.hidden = hidden;
 
   }
 
