@@ -199,7 +199,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 26 | *`View - Class`* | **View.js** | [Done](./src/View.js)\* |
 | 27 | *`Starter - Helper`* | **starter.js** | ~~Pending~~ |
 | 28 | *`Router - Helper`* | **router.js** | [Done](./src/helpers/router.js)\* |
-| 29 | *`Default Home - View`* | **default-home-view.js** | Pending |
+| 29 | *`Default Home - View`* | **default-home-view.js** | _*In progress*_ |
 | 30 | *`Default Login - View`* | **default-login-view.js** | Pending |
 | 31 | *`Default Register - View`* | **default-register-view.js** | Pending |
 | 32 | *`Engine - Class`* | **Engine.js** | [Done](./src/Engine.js)\* |
