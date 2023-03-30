@@ -196,7 +196,7 @@ These are some of the things we did or plan to do, in addition to this project's
 | 23 | *`App - Class`* | **App.js** | [Done](./src/App.js)\* |
 | 24 | *`Screen - Class`* | **Screen.js** | [Done](./src/Screen.js)\* |
 | 25 | *`Page - Class`* | **Page.js** | [Done](./src/Page.js)\* |
-| 26 | *`View - Class`* | **View.js** | Pending |
+| 26 | *`View - Class`* | **View.js** | [Done](./src/View.js)\* |
 | 27 | *`Starter - Helper`* | **starter.js** | ~~Pending~~ |
 | 28 | *`Router - Helper`* | **router.js** | [Done](./src/helpers/router.js)\* |
 | 29 | *`Default Home - View`* | **default-home-view.js** | Pending |
