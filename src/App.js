@@ -1403,8 +1403,8 @@ export class App extends Engine {
     let isPages = (this.mainPagesEl) ? true : false;
 
     // update the current page and view
-    this.currentPage = (!this.currentScreen && page.length === 0) ? 'home' : page;
-    this.currentView = view;
+    this.currentPage = (!this.currentScreen && page.trim().length === 0) ? 'home' : page;
+    this.currentView = (!this.currentScreen && view.trim().length === 0) ? 'default' : view;
     
     // if we are most likely on a splash or welcome screen...
     if (isScreens && [SPLASH_SCREEN, WELCOME_SCREEN].indexOf(this.currentScreen) !== -1) {
@@ -1416,7 +1416,7 @@ export class App extends Engine {
       this.notifyNavLinks();
 
       // navigate the pages using the page, view and params
-      this._navigatePages(this.currentPage, view, params);
+      this._navigatePages(this.currentPage, this.currentView, params);
     }
 
 
@@ -1487,15 +1487,21 @@ export class App extends Engine {
         this._pageLoading = false;
 
         // Initialize and open the page
-        pageObject = this._initPage(loadedPages[0], true);
+        pageObject = this._initPage(loadedPages[0], view, true);
+
+        // update the page's view
+        pageObject.view = view;
 
         // DEBUG [4dbsmaster]: tell me about it ;)
-        console.log(`\x1b[3m[_navigatePages] (1): page loaded!!! pageObject => \x1b[0m`, pageObject);
+        console.log(`\x1b[3m[_navigatePages] (1): page loaded!!! view => ${view} & pageObject => \x1b[0m`, pageObject);
       });
        
     }else { // <- page has already been loaded
       // get the page object
       pageObject = this[`${page.toCamelCase()}Page`];
+
+      // update the page's view
+      pageObject.view = view;
 
       // If the `pageObject` is not attached to this App...
       if (!pageObject.isAttached) {
@@ -1509,7 +1515,7 @@ export class App extends Engine {
     }
 
     // DEBUG [4dbsmaster]: tell me about it ;)
-    console.log(`\x1b[47m\x1b[30m[_navigatePages] (2): pageObject => \x1b[0m`, pageObject);
+    console.log(`\x1b[47m\x1b[30m[_navigatePages] (2): view => ${view} & pageObject => \x1b[0m`, pageObject);
 
   }
 
@@ -1866,11 +1872,12 @@ export class App extends Engine {
    *   _initPage(loadedPages[0], true); // <- instantiates the first page and opens it right after
    *
    * @param { Object } loadedPage
+   * @param { String } currentView
    * @param { Boolean } autoOpen - If TRUE, the page will be opened after instantiation
    *
    * @returns { Object } - an instance of the page
    */
-  _initPage(loadedPage, autoOpen) {
+  _initPage(loadedPage, currentView,  autoOpen) {
     // TODO: do nothing if the `loadedPage` has already been instantiated
     
     // get the page name as `pageName`
@@ -1886,6 +1893,9 @@ export class App extends Engine {
     // instantiate the page in this app
     this[pageId] = new PageClass(pageType, pageName);
 
+    // update the current view
+    this[pageId].view = currentView;
+
     // if `autoOpen` is TRUE
     if (autoOpen) {
       this[pageId].open();
@@ -1896,7 +1906,7 @@ export class App extends Engine {
 
     // DEBUG [4dbsmaster]: tell me about it ;)
     console.log(`\x1b[40m\x1b[34m[_initPage] (1|in anticipation): pageType => ${pageType} & pageName => ${pageName} & pageId => ${pageId}`); 
-    console.log(`\x1b[40m\x1b[34m[_initPage] (2|in anticipation): loadedPage => \x1b[0m`, loadedPage);
+    console.log(`\x1b[40m\x1b[34m[_initPage] (2|in anticipation): currentView => ${currentView} & loadedPage => \x1b[0m`, loadedPage);
 
     // return an instance of the page
     return this[pageId];
